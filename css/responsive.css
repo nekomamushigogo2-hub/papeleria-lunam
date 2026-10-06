@@ -1,0 +1,16 @@
+
+
+@media (min-width: 900px) {
+  .app-layout {
+    grid-template-columns: 1fr 380px;
+    align-items: start;
+  }
+}
+
+@media (max-width: 480px) {
+  .app-header { padding: 14px 16px; } 
+  .app-layout { padding: 16px; gap: 18px; }
+  .catalog-grid { grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 12px; }
+  .product-card { padding: 12px; }
+  .invoice-panel { position: static; }
+}

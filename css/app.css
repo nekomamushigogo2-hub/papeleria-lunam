@@ -1,0 +1,62 @@
+/* app.css — estados de carga/error, stock y notificaciones */
+.estado-carga, .estado-error { text-align: center; padding: 40px 20px; color: var(--color-ink-soft); width: 100%; }
+.estado-error p { color: #DC2626; margin: 0 0 12px; }
+.product-stock { font-size: 0.75rem; color: var(--color-ink-soft); margin: 0; }
+.product-stock.agotado { color: #DC2626; font-weight: 600; }
+
+.toast {
+  position: fixed; bottom: 20px; left: 50%;
+  transform: translateX(-50%) translateY(20px);
+  background: var(--color-ink); color: var(--color-paper);
+  padding: 10px 16px; border-radius: 8px; font-size: 0.85rem;
+  max-width: 90%; opacity: 0; pointer-events: none;
+  transition: opacity 0.2s ease, transform 0.2s ease; z-index: 2000;
+}
+.toast.visible { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+@media (max-width: 600px) {
+  .product-card { flex-wrap: wrap; }
+  .product-right { width: 100%; justify-content: space-between; }
+}
+
+/* ---- Panel de venta ---- */
+.panel-titulo { display: flex; justify-content: space-between; align-items: center; }
+.campo { display: flex; flex-direction: column; gap: 4px; }
+.campo label { font-size: 0.85rem; font-weight: 600; color: var(--color-ink-soft); }
+.campo select, .campo input {
+  padding: 9px 10px; border: 1.5px solid var(--color-line); border-radius: 8px;
+  font-family: var(--font-body); font-size: 0.9rem; background: var(--color-card); color: var(--color-ink);
+}
+.btn-cerrar {
+  width: 100%; padding: 11px; margin-top: 8px; border: none; border-radius: 8px;
+  background: var(--color-ink); color: var(--color-paper);
+  font-family: var(--font-body); font-weight: 600; font-size: 0.95rem; cursor: pointer;
+}
+.btn-cerrar:hover:not(:disabled) { background: var(--color-gold-deep); }
+.btn-cerrar:disabled { opacity: 0.6; cursor: wait; }
+.oculto { display: none !important; }
+
+/* ---- Navegación y vistas ---- */
+.app-nav { display: flex; gap: 6px; padding: 10px 24px 0; background: var(--color-card); border-bottom: 2px solid var(--color-line); overflow-x: auto; }
+.nav-btn { padding: 10px 16px; border: none; background: none; font-family: var(--font-body); font-weight: 600; font-size: 0.9rem; color: var(--color-ink-soft); cursor: pointer; border-bottom: 3px solid transparent; white-space: nowrap; }
+.nav-btn:hover { color: var(--color-ink); }
+.nav-btn.activo { color: var(--color-ink); border-bottom-color: var(--color-gold); }
+.vista:not(.app-layout) { max-width: 1400px; margin: 0 auto; padding: 24px; }
+.vista-cabecera { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; gap: 12px; }
+.vista-cabecera h2 { font-family: var(--font-display); font-size: 1.15rem; margin: 0; }
+
+/* ---- Tablas ---- */
+.tabla-contenedor { overflow-x: auto; background: var(--color-card); border: 1px solid var(--color-line); border-radius: var(--radius-card); }
+.tabla-contenedor table { width: 100%; border-collapse: collapse; font-size: 0.85rem; }
+.tabla-contenedor th, .tabla-contenedor td { padding: 10px 12px; text-align: left; border-bottom: 1px solid var(--color-line); white-space: nowrap; }
+.tabla-contenedor th { color: var(--color-ink-soft); font-weight: 600; font-size: 0.78rem; text-transform: uppercase; letter-spacing: 0.03em; }
+.tabla-contenedor td.acciones { display: flex; gap: 6px; }
+.btn-mini-peligro { background: #FEE2E2; color: #DC2626; border: none; padding: 6px 10px; border-radius: 6px; font-size: 0.78rem; font-weight: 600; cursor: pointer; }
+
+/* ---- Modal con formulario ---- */
+.modal-form { max-width: 420px; text-align: left; max-height: 92vh; overflow-y: auto; }
+.modal-form h3 { text-align: center; }
+.fila-campos { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.campo-check { display: flex; align-items: center; gap: 8px; font-size: 0.85rem; font-weight: 600; color: var(--color-ink-soft); }
+.p-error { color: #DC2626; font-size: 0.82rem; min-height: 1em; margin: 0; }
+.factura-linea { flex-wrap: wrap; }

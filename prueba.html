@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Prueba de conexión — Papel y Luna</title>
+  <style>
+    body { font-family: system-ui, sans-serif; background: #FFFCF6; color: #201D1A; max-width: 720px; margin: 24px auto; padding: 0 16px; }
+    h1 { font-size: 1.2rem; }
+    .botones { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 16px; }
+    button { padding: 10px 14px; border: none; border-radius: 8px; background: #201D1A; color: #FFFCF6; font-weight: 600; cursor: pointer; }
+    button:disabled { opacity: .5; cursor: wait; }
+    pre { background: #fff; border: 1px solid #EAE1D2; border-radius: 8px; padding: 12px; white-space: pre-wrap; word-break: break-word; min-height: 120px; }
+    .ok { color: #15803d; } .error { color: #DC2626; }
+  </style>
+</head>
+<body>
+  <h1>Prueba de conexión con el servicio</h1>
+  <p>Ejecuta los pasos en orden. Cada uno debe terminar en verde.</p>
+
+  <div class="botones">
+    <button id="b-leer">1. Leer productos</button>
+    <button id="b-crear">2. Crear categoría</button>
+    <button id="b-actualizar">3. Actualizarla</button>
+    <button id="b-eliminar">4. Eliminarla</button>
+  </div>
+
+  <pre id="salida">Esperando...</pre>
+
+  <script type="module">
+    import { listar, crear, actualizar, eliminar } from "./js/api.js";
+
+    const salida = document.getElementById("salida");
+    let idPrueba = null;
+
+    // Envuelve cada prueba: estado de carga, botón deshabilitado y manejo de error
+    async function correr(boton, tarea) {
+      boton.disabled = true;
+      salida.className = "";
+      salida.textContent = "Cargando...";
+      try {
+        const resultado = await tarea();
+        salida.className = "ok";
+        salida.textContent = "OK\n" + JSON.stringify(resultado, null, 2);
+      } catch (e) {
+        salida.className = "error";
+        salida.textContent = "ERROR: " + e.message;
+      } finally {
+        boton.disabled = false;
+      }
+    }
+
+    const $ = (id) => document.getElementById(id);
+
+    $("b-leer").onclick = () => correr($("b-leer"), () => listar("productos"));
+
+    $("b-crear").onclick = () => correr($("b-crear"), async () => {
+      const r = await crear("categorias", { nombre: "Categoría de prueba" });
+      idPrueba = r.id;
+      return r;
+    });
+
+    $("b-actualizar").onclick = () => correr($("b-actualizar"), async () => {
+      if (!idPrueba) throw new Error("Primero crea la categoría (paso 2).");
+      return actualizar("categorias", { id: idPrueba, nombre: "Categoría modificada" });
+    });
+
+    $("b-eliminar").onclick = () => correr($("b-eliminar"), async () => {
+      if (!idPrueba) throw new Error("Primero crea la categoría (paso 2).");
+      const r = await eliminar("categorias", idPrueba);
+      idPrueba = null;
+      return r;
+    });
+  </script>
+</body>
+</html>

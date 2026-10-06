@@ -1,0 +1,54 @@
+@import url('https://fonts.googleapis.com/css2?family=Fraunces:ital,wght@0,500;0,600;1,500&family=Inter:wght@400;500;600;700&display=swap');
+
+:root { /* Variables de color y tipografia */
+  --color-gold: #F2A93B;
+  --color-gold-deep: #D98D1B;
+  --color-ink: #201D1A;
+  --color-paper: #FFFCF6;
+  --color-card: #FFFFFF;
+  --color-pencil: #C97F4B;
+
+  --color-ink-soft: #6B655D;
+  --color-line: #EAE1D2;
+  --color-success-bg: #F3EFE6;
+
+  --font-display: 'Fraunces', Georgia, serif;
+  --font-body: 'Inter', system-ui, sans-serif;
+
+  --radius-card: 14px;
+  --radius-pill: 999px;
+  --shadow-card: 0 2px 10px rgba(32, 29, 26, 0.06);
+  --shadow-card-hover: 0 8px 24px rgba(32, 29, 26, 0.12);
+}
+
+* /* * es el selector universal */ { box-sizing: border-box; } /* Reset de márgenes y paddings */
+
+body {
+  margin: 0;
+  background: var(--color-paper);
+  color: var(--color-ink);
+  font-family: var(--font-body);
+  -webkit-font-smoothing: antialiased;
+}
+/*  Layout general===> catalogo y  factura*/
+.app-layout {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 24px;
+  padding: 24px;
+  max-width: 1400px;
+  margin: 0 auto;
+}
+/* Modo Oscuro */
+body.dark-mode {
+  --color-paper: #1A1816;
+  --color-card: #262320;
+  --color-ink: #F5EFE6;
+  --color-ink-soft: #A8A095;
+  --color-line: #3D3833;
+  --color-gold: #D98D1B;
+  --color-gold-deep: #F2A93B;
+  --color-pencil: #E08E55;
+  --shadow-card: 0 2px 10px rgba(0, 0, 0, 0.3);
+  --shadow-card-hover: 0 8px 24px rgba(0, 0, 0, 0.5);
+}
