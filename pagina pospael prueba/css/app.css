@@ -1,0 +1,37 @@
+/* app.css — estados de carga/error, stock y notificaciones */
+.estado-carga, .estado-error { text-align: center; padding: 40px 20px; color: var(--color-ink-soft); width: 100%; }
+.estado-error p { color: #DC2626; margin: 0 0 12px; }
+.product-stock { font-size: 0.75rem; color: var(--color-ink-soft); margin: 0; }
+.product-stock.agotado { color: #DC2626; font-weight: 600; }
+
+.toast {
+  position: fixed; bottom: 20px; left: 50%;
+  transform: translateX(-50%) translateY(20px);
+  background: var(--color-ink); color: var(--color-paper);
+  padding: 10px 16px; border-radius: 8px; font-size: 0.85rem;
+  max-width: 90%; opacity: 0; pointer-events: none;
+  transition: opacity 0.2s ease, transform 0.2s ease; z-index: 2000;
+}
+.toast.visible { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+@media (max-width: 600px) {
+  .product-card { flex-wrap: wrap; }
+  .product-right { width: 100%; justify-content: space-between; }
+}
+
+/* ---- Panel de venta ---- */
+.panel-titulo { display: flex; justify-content: space-between; align-items: center; }
+.campo { display: flex; flex-direction: column; gap: 4px; }
+.campo label { font-size: 0.85rem; font-weight: 600; color: var(--color-ink-soft); }
+.campo select, .campo input {
+  padding: 9px 10px; border: 1.5px solid var(--color-line); border-radius: 8px;
+  font-family: var(--font-body); font-size: 0.9rem; background: var(--color-card); color: var(--color-ink);
+}
+.btn-cerrar {
+  width: 100%; padding: 11px; margin-top: 8px; border: none; border-radius: 8px;
+  background: var(--color-ink); color: var(--color-paper);
+  font-family: var(--font-body); font-weight: 600; font-size: 0.95rem; cursor: pointer;
+}
+.btn-cerrar:hover:not(:disabled) { background: var(--color-gold-deep); }
+.btn-cerrar:disabled { opacity: 0.6; cursor: wait; }
+.oculto { display: none !important; }

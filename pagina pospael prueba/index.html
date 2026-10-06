@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Papel y Luna — POS</title>
+
+  <link rel="stylesheet" href="css/variables.css">
+  <link rel="stylesheet" href="css/header.css">
+  <link rel="stylesheet" href="css/catalog.css">
+  <link rel="stylesheet" href="css/invoice.css">
+  <link rel="stylesheet" href="css/responsive.css">
+  <link rel="stylesheet" href="css/app.css">
+</head>
+<body>
+
+  <header class="app-header" style="justify-content: space-between;">
+    <div style="display: flex; align-items: center; gap: 14px;">
+      <img src="img/logo.png" alt="Logo Papel y Luna">
+      <div>
+        <h1>Papel y Luna</h1>
+        <p>Papelería y miscelánea · Punto de venta</p>
+      </div>
+    </div>
+
+    <!-- BOTÓN MODO OSCURO -->
+    <button id="btn-tema" class="btn-vaciar" style="font-size: 1.1rem; padding: 6px 12px; cursor: pointer;">🌙</button>
+  </header>
+
+  <main class="app-layout">
+
+    <!-- CATÁLOGO DE PRODUCTOS -->
+    <section class="catalog-section">
+      <div class="search-bar">
+        <svg viewBox="0 0 24 24" fill="none" stroke-width="2">
+          <circle cx="11" cy="11" r="7"/>
+          <line x1="21" y1="21" x2="16.65" y2="16.65"/>
+        </svg>
+        <input type="text" id="buscador" placeholder="Buscar producto por nombre...">
+      </div>
+
+      <h2>Catálogo de productos</h2>
+      <p class="catalog-count" id="contador-productos"></p>
+      <div class="catalog-grid" id="catalogo-grid"></div>
+    </section>
+
+    <!-- PANEL DE VENTA ACTUAL Y VENTAS ABIERTAS -->
+    <aside class="invoice-panel">
+      <div class="panel-titulo">
+        <h2>Venta actual</h2>
+        <button id="btn-vaciar" class="btn-vaciar" title="Vaciar la venta">🗑️ Limpiar</button>
+      </div>
+
+      <div id="factura-lista"></div>
+      <div id="factura-vacia">
+        <p>Aún no has agregado productos.<br>Búscalos en el catálogo y dales "Agregar".</p>
+      </div>
+
+      <div class="campo">
+        <label for="cliente">Cliente</label>
+        <select id="cliente"><option value="">Sin cliente</option></select>
+      </div>
+
+      <div class="payment-methods-section">
+        <p class="payment-title">Método de pago</p>
+        <div class="payment-buttons" id="metodos-pago"></div>
+      </div>
+
+      <div class="campo" id="campo-recibido">
+        <label for="recibido">Valor recibido</label>
+        <input type="number" id="recibido" min="0" step="100" placeholder="0">
+      </div>
+
+      <div class="invoice-totals">
+        <div class="row"><span>Subtotal</span><span id="factura-subtotal">$0</span></div>
+        <div class="row total"><span>Total</span><span id="factura-total">$0</span></div>
+        <div class="row" id="fila-cambio"><span>Cambio</span><span id="factura-cambio">$0</span></div>
+        
+        <button id="btn-guardar-abierta" class="btn-guardar-factura">💾 Guardar venta abierta</button>
+        <button id="btn-cerrar" class="btn-cerrar">Cerrar venta</button>
+      </div>
+
+      <!-- LISTADO DE VENTAS ABIERTAS -->
+      <section class="historial-section">
+        <h2>Ventas abiertas</h2>
+        <div id="historial-lista">
+          <p class="historial-vacio">No hay ventas abiertas.</p>
+        </div>
+      </section>
+    </aside>
+
+    <!-- SECCIÓN DE REGISTRO DE COMPRAS -->
+    <section class="compras-section" style="grid-column: 1 / -1; background: var(--color-card); border: 1px solid var(--color-line); border-radius: var(--radius-card); padding: 20px;">
+      <h2>Registrar Compra a Proveedor</h2>
+      
+      <div style="display: flex; gap: 16px; flex-wrap: wrap; margin-bottom: 16px;">
+        <div class="campo" style="flex: 1; min-width: 200px;">
+          <label for="compra-proveedor">Proveedor *</label>
+          <select id="compra-proveedor"><option value="">Selecciona proveedor...</option></select>
+        </div>
+        <div class="campo" style="flex: 1; min-width: 200px;">
+          <label for="compra-producto">Producto *</label>
+          <select id="compra-producto"><option value="">Selecciona producto...</option></select>
+        </div>
+      </div>
+
+      <div style="display: flex; gap: 16px; flex-wrap: wrap; align-items: flex-end; margin-bottom: 16px;">
+        <div class="campo" style="width: 120px;">
+          <label for="compra-cantidad">Cantidad</label>
+          <input type="number" id="compra-cantidad" min="1" value="1">
+        </div>
+        <div class="campo" style="width: 140px;">
+          <label for="compra-costo">Costo Unit.</label>
+          <input type="number" id="compra-costo" min="0" placeholder="0">
+        </div>
+        <button id="btn-agregar-item-compra" type="button" class="btn-add">➕ Agregar Ítem</button>
+      </div>
+
+      <!-- LISTA TEMPORAL DE ÍTEMS DE LA COMPRA -->
+      <div id="compra-items-lista" style="margin-bottom: 16px;"></div>
+
+      <div style="display: flex; justify-content: space-between; align-items: center; border-top: 1px solid var(--color-line); padding-top: 12px;">
+        <div>
+          <strong>Total Compra: </strong><span id="compra-total-txt">$0</span>
+        </div>
+        <button id="btn-guardar-compra" type="button" class="btn-cerrar" style="width: auto; padding: 10px 20px;">💾 Registrar Compra</button>
+      </div>
+    </section>
+
+    <!-- SECCIÓN DE GESTIÓN DE ENTIDADES (Categorías, Clientes y Proveedores) -->
+    <section class="entidades-section" style="grid-column: 1 / -1; background: var(--color-card); border: 1px solid var(--color-line); border-radius: var(--radius-card); padding: 20px;">
+      <h2>Gestión de Entidades</h2>
+      
+      <!-- Pestañas de Navegación de Entidades -->
+      <div style="display: flex; gap: 8px; margin-bottom: 16px;">
+        <button id="tab-categorias" type="button" class="btn-payment selected">Categorías</button>
+        <button id="tab-clientes" type="button" class="btn-payment">Clientes</button>
+        <button id="tab-proveedores" type="button" class="btn-payment">Proveedores</button>
+      </div>
+
+      <!-- Formulario para Crear / Editar Entidades -->
+      <form id="form-entidades" style="display: flex; gap: 12px; flex-wrap: wrap; align-items: flex-end; margin-bottom: 16px; background: var(--color-paper); padding: 12px; border-radius: 8px; border: 1px solid var(--color-line);">
+        <input type="hidden" id="entidad-id">
+        
+        <div class="campo" style="flex: 1; min-width: 150px;">
+          <label for="entidad-nombre">Nombre *</label>
+          <input type="text" id="entidad-nombre" required placeholder="Nombre...">
+        </div>
+
+        <div class="campo campo-extra" style="flex: 1; min-width: 150px;">
+          <label for="entidad-telefono">Teléfono</label>
+          <input type="text" id="entidad-telefono" placeholder="Teléfono...">
+        </div>
+
+        <div class="campo campo-extra" style="flex: 1; min-width: 150px;">
+          <label for="entidad-correo">Correo</label>
+          <input type="email" id="entidad-correo" placeholder="Correo...">
+        </div>
+
+        <button id="btn-guardar-entidad" type="submit" class="btn-add">💾 Guardar</button>
+        <button id="btn-cancelar-entidad" type="button" class="btn-vaciar" style="display: none;">Cancelar</button>
+      </form>
+
+      <!-- Lista de registros de la Entidad Activa -->
+      <div id="entidades-lista" style="display: flex; flex-direction: column; gap: 8px;"></div>
+    </section>
+
+  </main>
+
+  <div id="notificacion" class="toast" role="status"></div>
+
+  <script type="module" src="js/main.js"></script>
+</body>
+</html>
