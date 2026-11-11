@@ -321,6 +321,11 @@ export function iniciarVenta() {
   el("recibido").addEventListener("input", dibujarVenta);
   el("btn-ir-venta").addEventListener("click", () =>
     document.querySelector(".invoice-panel").scrollIntoView({ behavior: "smooth" }));
+  // En celular, la barra "Ver venta" se esconde cuando el panel de la venta ya está en pantalla
+  // (si no, taparía el total y el botón Cobrar)
+  new IntersectionObserver(([entrada]) => {
+    el("btn-ir-venta").classList.toggle("panel-visible", entrada.isIntersecting);
+  }, { threshold: 0.05 }).observe(document.querySelector(".invoice-panel"));
   el("descuento").addEventListener("change", dibujarVenta);
   el("btn-cerrar").addEventListener("click", cerrarVenta);
   el("btn-guardar-abierta").addEventListener("click", guardarVentaAbierta);
