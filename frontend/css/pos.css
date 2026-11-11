@@ -1,0 +1,653 @@
+/* ==========================================================================
+   POS Papel y Luna — sistema visual
+   Idea: útiles escolares. Tinta de esfero, papel, renglones de cuaderno y un
+   solo acento fuerte: el resaltador amarillo (marca el total y el módulo activo).
+   ========================================================================== */
+
+/* ---------- 1. Tokens ---------- */
+:root {
+  /* Color */
+  --papel: #F4F6FA;          /* fondo de la aplicación */
+  --hoja: #FFFFFF;           /* superficies */
+  --hoja-2: #F8F9FC;         /* superficie hundida (filas, inputs de solo lectura) */
+  --tinta: #233876;          /* acción principal, barra lateral */
+  --tinta-2: #2F4AA0;        /* hover de la acción principal */
+  --tinta-suave: #E8EDFA;    /* fondos seleccionados */
+  --grafito: #1F2328;        /* texto principal */
+  --grafito-2: #535B69;      /* texto secundario (7:1 sobre blanco) */
+  --grafito-3: #6B7383;      /* texto auxiliar (4.8:1 sobre blanco) */
+  --renglon: #DCE2EC;        /* bordes y divisiones */
+  --renglon-azul: #C9D6F2;   /* renglones del cuaderno */
+  --resaltador: #FFE45E;     /* el acento: total, módulo activo */
+  --resaltador-texto: #3A3000;
+  --margen: #C8324B;         /* rojo del margen: peligro / error */
+  --margen-suave: #FCECEF;
+  --exito: #1E7B4F;
+  --exito-suave: #E5F4EC;
+  --aviso: #8A5A00;
+  --aviso-suave: #FFF4D6;
+
+  /* Resaltadores por categoría (fondos de las fichas de producto) */
+  --tono-0: #FFF1A8; --tono-1: #FFD6E5; --tono-2: #CFE6FF;
+  --tono-3: #D4F5DD; --tono-4: #FFE0C2; --tono-5: #E6DCFF;
+
+  /* Tipografía */
+  --fuente-titulo: "Bricolage Grotesque", "Segoe UI", system-ui, sans-serif;
+  --fuente-ui: "Atkinson Hyperlegible Next", "Atkinson Hyperlegible", system-ui, -apple-system, "Segoe UI", sans-serif;
+
+  /* Escala tipográfica (razón 1.2) */
+  --t-xs: 0.78rem;
+  --t-sm: 0.875rem;
+  --t-md: 1rem;
+  --t-lg: 1.2rem;
+  --t-xl: 1.44rem;
+  --t-2xl: 1.9rem;
+
+  /* Espacio, radios, sombra */
+  --e-1: 4px; --e-2: 8px; --e-3: 12px; --e-4: 16px; --e-5: 24px; --e-6: 32px;
+  --r-panel: 14px;
+  --r-control: 9px;
+  --sombra-flotante: 0 12px 40px rgba(20, 30, 60, 0.18);
+  --foco: 0 0 0 3px var(--hoja), 0 0 0 5px var(--tinta);
+
+  --rail: 236px;
+  --cuaderno: 400px;
+}
+
+body.dark-mode {
+  --papel: #11151D;
+  --hoja: #1A1F29;
+  --hoja-2: #151A23;
+  --tinta: #7E9BFF;
+  --tinta-2: #9CB2FF;
+  --tinta-suave: #232C45;
+  --grafito: #E9ECF2;
+  --grafito-2: #B0B7C5;
+  --grafito-3: #959DAD;
+  --renglon: #2C3442;
+  --renglon-azul: #26324D;
+  --margen: #FF7A8E;
+  --margen-suave: #3A1E25;
+  --exito: #5FD39A;
+  --exito-suave: #17301F;
+  --aviso: #F5C35B;
+  --aviso-suave: #33290F;
+  --tono-0: #4A4318; --tono-1: #4A2533; --tono-2: #1E3550;
+  --tono-3: #1F4029; --tono-4: #4A3218; --tono-5: #33284D;
+  --sombra-flotante: 0 12px 40px rgba(0, 0, 0, 0.5);
+}
+
+/* ---------- 2. Base ---------- */
+*, *::before, *::after { box-sizing: border-box; }
+html { -webkit-text-size-adjust: 100%; }
+body {
+  margin: 0;
+  background: var(--papel);
+  color: var(--grafito);
+  font-family: var(--fuente-ui);
+  font-size: var(--t-md);
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+  font-variant-numeric: tabular-nums;
+}
+h1, h2, h3, h4 { font-family: var(--fuente-titulo); line-height: 1.15; margin: 0; letter-spacing: -0.01em; }
+p { margin: 0; }
+img { max-width: 100%; display: block; }
+button, input, select, textarea { font: inherit; color: inherit; }
+button { cursor: pointer; }
+:focus-visible { outline: none; box-shadow: var(--foco); border-radius: var(--r-control); }
+.oculto { display: none !important; }
+.solo-lector {
+  position: absolute; width: 1px; height: 1px; margin: -1px; overflow: hidden;
+  clip: rect(0 0 0 0); white-space: nowrap; border: 0;
+}
+.icono { width: 18px; height: 18px; flex-shrink: 0; stroke: currentColor; fill: none; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+kbd {
+  font-family: var(--fuente-ui); font-size: 0.72rem; padding: 1px 6px; border-radius: 5px;
+  border: 1px solid var(--renglon); border-bottom-width: 2px; background: var(--hoja); color: var(--grafito-2);
+}
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { transition: none !important; animation: none !important; scroll-behavior: auto !important; }
+}
+body[data-rol="cajero"] [data-solo-admin] { display: none !important; }
+
+/* ---------- 3. Botones ---------- */
+.btn, .btn-add, .btn-cerrar, .btn-guardar-factura, .btn-vaciar, .btn-recuperar,
+.btn-modal-secundario, .btn-imprimir, .btn-modal-primario {
+  display: inline-flex; align-items: center; justify-content: center; gap: var(--e-2);
+  min-height: 40px; padding: 0 var(--e-4);
+  border-radius: var(--r-control); border: 1px solid transparent;
+  font-weight: 700; font-size: var(--t-sm); line-height: 1; white-space: nowrap;
+  transition: background-color .15s ease, border-color .15s ease, color .15s ease;
+}
+/* Principal: tinta */
+.btn-add, .btn-cerrar, .btn-modal-primario { background: var(--tinta); color: #fff; }
+body.dark-mode .btn-add, body.dark-mode .btn-cerrar, body.dark-mode .btn-modal-primario { color: #0E1630; }
+.btn-add:hover, .btn-cerrar:hover:not(:disabled), .btn-modal-primario:hover { background: var(--tinta-2); }
+/* Secundario */
+.btn-vaciar, .btn-modal-secundario, .btn-imprimir, .btn-guardar-factura {
+  background: var(--hoja); border-color: var(--renglon); color: var(--grafito);
+}
+.btn-vaciar:hover, .btn-modal-secundario:hover, .btn-imprimir:hover, .btn-guardar-factura:hover {
+  border-color: var(--grafito-3); background: var(--hoja-2);
+}
+/* Énfasis suave (Retomar, Ver factura) */
+.btn-recuperar { background: var(--tinta-suave); color: var(--tinta); }
+.btn-recuperar:hover { border-color: var(--tinta); }
+.btn-peligro, .btn-eliminar-producto { color: var(--margen) !important; }
+.btn-peligro:hover { border-color: var(--margen) !important; background: var(--margen-suave) !important; }
+button:disabled { opacity: .55; cursor: not-allowed; }
+
+/* Botón solo-ícono */
+.btn-eliminar, .btn-icono {
+  display: inline-grid; place-items: center; width: 36px; height: 36px; padding: 0;
+  border: 1px solid transparent; border-radius: var(--r-control); background: transparent; color: var(--grafito-3);
+}
+.btn-eliminar:hover, .btn-icono:hover { background: var(--hoja-2); color: var(--margen); border-color: var(--renglon); }
+.btn-eliminar[data-accion="editar"]:hover { color: var(--tinta); }
+
+@media (pointer: coarse) {
+  .btn-add, .btn-cerrar, .btn-vaciar, .btn-recuperar, .btn-modal-secundario, .btn-imprimir,
+  .btn-guardar-factura, .btn-payment { min-height: 44px; }
+  .btn-eliminar, .btn-icono { width: 44px; height: 44px; }
+}
+
+/* ---------- 4. Formularios ---------- */
+.campo { display: flex; flex-direction: column; gap: 6px; min-width: 0; }
+.campo label, .etiqueta { font-size: var(--t-sm); font-weight: 700; color: var(--grafito-2); }
+.campo input, .campo select, .campo textarea,
+.search-bar input, .editor-linea input[type="number"], .qty-input {
+  width: 100%; min-height: 42px; padding: 0 var(--e-3);
+  background: var(--hoja); color: var(--grafito);
+  border: 1px solid var(--renglon); border-radius: var(--r-control);
+  transition: border-color .15s ease;
+}
+.campo input:hover, .campo select:hover { border-color: var(--grafito-3); }
+.campo input:focus-visible, .campo select:focus-visible, .search-bar input:focus-visible,
+.qty-input:focus-visible, .editor-linea input:focus-visible {
+  border-color: var(--tinta); box-shadow: 0 0 0 1px var(--tinta), 0 0 0 5px var(--tinta-suave); border-radius: var(--r-control);
+}
+.campo select { appearance: none; padding-right: 36px;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%236B7383' stroke-width='2' stroke-linecap='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
+  background-repeat: no-repeat; background-position: right 10px center; background-size: 18px; }
+input[type="number"] { font-variant-numeric: tabular-nums; }
+.check-linea { display: flex; align-items: center; gap: var(--e-2); font-size: var(--t-sm); cursor: pointer; }
+.check-linea input { width: 18px; height: 18px; accent-color: var(--tinta); }
+
+/* ---------- 5. Estructura: barra lateral + contenido ---------- */
+.shell { display: grid; grid-template-columns: var(--rail) 1fr; min-height: 100vh; }
+
+.rail {
+  position: sticky; top: 0; height: 100vh;
+  display: flex; flex-direction: column; gap: var(--e-5);
+  padding: var(--e-5) var(--e-4);
+  background: #1B2A5C; color: #E7ECFA;
+}
+body.dark-mode .rail { background: #0C1018; border-right: 1px solid var(--renglon); }
+.marca { display: flex; align-items: center; gap: var(--e-3); padding: 0 var(--e-2); }
+.marca img { width: 42px; height: 42px; border-radius: 50%; background: #fff; }
+.marca strong { display: block; font-family: var(--fuente-titulo); font-size: var(--t-lg); color: #fff; }
+.marca span { font-size: var(--t-xs); color: #B9C4E6; }
+
+.app-nav { display: flex; flex-direction: column; gap: 2px; }
+.app-nav button {
+  display: flex; align-items: center; gap: var(--e-3);
+  width: 100%; min-height: 42px; padding: 0 var(--e-3);
+  border: 0; border-radius: var(--r-control); background: transparent;
+  color: #D5DDF5; font-weight: 700; font-size: var(--t-sm); text-align: left;
+}
+.app-nav button:hover { background: rgba(255, 255, 255, 0.08); color: #fff; }
+.app-nav button:focus-visible { box-shadow: 0 0 0 2px var(--resaltador); }
+/* Módulo activo: trazo de resaltador */
+.app-nav button.selected { background: var(--resaltador); color: var(--resaltador-texto); }
+.app-nav .nav-grupo { margin: var(--e-4) var(--e-3) var(--e-1); font-size: var(--t-xs); color: #97A6D3; font-weight: 700; }
+
+.rail-pie { margin-top: auto; display: flex; flex-direction: column; gap: var(--e-3); }
+.usuario-tarjeta { display: flex; align-items: center; gap: var(--e-3); padding: var(--e-3); border-radius: var(--r-control); background: rgba(255,255,255,0.06); }
+.avatar {
+  width: 36px; height: 36px; border-radius: 50%; display: grid; place-items: center;
+  background: var(--resaltador); color: var(--resaltador-texto); font-weight: 800; font-family: var(--fuente-titulo);
+}
+.usuario-tarjeta strong { display: block; font-size: var(--t-sm); color: #fff; line-height: 1.2; }
+.usuario-tarjeta span { font-size: var(--t-xs); color: #B9C4E6; }
+.rail-acciones { display: flex; gap: var(--e-2); }
+.rail-acciones button {
+  flex: 1; min-height: 38px; display: inline-flex; align-items: center; justify-content: center; gap: 6px;
+  border-radius: var(--r-control); border: 1px solid rgba(255,255,255,0.18); background: transparent;
+  color: #E7ECFA; font-weight: 700; font-size: var(--t-xs);
+}
+.rail-acciones button:hover { background: rgba(255,255,255,0.08); }
+
+.velo { display: none; }
+.contenido { min-width: 0; display: flex; flex-direction: column; }
+.topbar {
+  display: flex; align-items: center; gap: var(--e-3);
+  padding: var(--e-4) var(--e-6); min-height: 72px;
+  border-bottom: 1px solid var(--renglon); background: var(--hoja);
+  position: sticky; top: 0; z-index: 40;
+}
+.topbar h1 { font-size: var(--t-xl); }
+.topbar .ayuda { margin-left: auto; font-size: var(--t-xs); color: var(--grafito-3); display: flex; gap: var(--e-3); align-items: center; }
+.btn-menu { display: none; }
+
+.app-layout { padding: var(--e-5) var(--e-6) var(--e-6); display: grid; gap: var(--e-5); align-items: start; }
+.app-layout.vista-venta { grid-template-columns: minmax(0, 1fr) var(--cuaderno); }
+
+/* ---------- 6. Catálogo ---------- */
+.catalog-section { min-width: 0; }
+.search-bar { position: relative; margin-bottom: var(--e-4); }
+.search-bar .icono { position: absolute; left: 14px; top: 50%; transform: translateY(-50%); color: var(--grafito-3); width: 20px; height: 20px; }
+.search-bar input { min-height: 50px; padding-left: 44px; padding-right: 64px; font-size: var(--t-md); border-radius: 12px; }
+.search-bar kbd { position: absolute; right: 12px; top: 50%; transform: translateY(-50%); }
+
+.catalog-cabecera { display: flex; align-items: baseline; justify-content: space-between; gap: var(--e-3); margin-bottom: var(--e-3); }
+.catalog-cabecera h2 { font-size: var(--t-lg); }
+.catalog-count { font-size: var(--t-sm); color: var(--grafito-3); }
+
+.catalog-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(196px, 1fr)); gap: var(--e-3); }
+
+.product-card {
+  display: grid; grid-template-rows: auto 1fr auto; gap: var(--e-3);
+  padding: var(--e-3); background: var(--hoja);
+  border: 1px solid var(--renglon); border-radius: var(--r-panel);
+  transition: border-color .15s ease;
+}
+.product-card:hover { border-color: var(--grafito-3); }
+.product-card.sin-stock { background: var(--hoja-2); }
+.product-left { display: flex; align-items: center; gap: var(--e-3); }
+.product-photo {
+  width: 44px; height: 44px; flex-shrink: 0; border-radius: 10px;
+  display: grid; place-items: center;
+  background: var(--tono, var(--tono-0)); color: var(--grafito);
+  font-family: var(--fuente-titulo); font-weight: 700; font-size: var(--t-md);
+}
+.product-category { font-size: var(--t-xs); color: var(--grafito-3); font-weight: 700; }
+.product-info { min-width: 0; }
+.product-name { font-family: var(--fuente-ui); font-size: var(--t-md); font-weight: 700; line-height: 1.25; }
+.product-stock { margin-top: 4px; font-size: var(--t-xs); color: var(--grafito-3); display: flex; align-items: center; gap: 6px; }
+.product-stock::before { content: ""; width: 7px; height: 7px; border-radius: 50%; background: var(--exito); }
+.product-stock.poco { color: var(--aviso); }
+.product-stock.poco::before { background: #E0A100; }
+.product-stock.agotado { color: var(--margen); font-weight: 700; }
+.product-stock.agotado::before { background: var(--margen); }
+.product-right { display: flex; align-items: center; justify-content: space-between; gap: var(--e-2); }
+.product-price { font-family: var(--fuente-titulo); font-size: var(--t-lg); font-weight: 700; }
+.product-actions { display: flex; gap: 6px; align-items: center; }
+.qty-input { width: 52px; min-height: 40px; padding: 0 6px; text-align: center; }
+.product-actions .btn-add, .product-actions .btn-faltante { flex: 1; padding: 0 var(--e-3); }
+.product-actions .btn-add .icono, .product-actions .btn-faltante .icono { width: 16px; height: 16px; }
+
+.catalog-empty, .estado-carga, .estado-error, .historial-vacio {
+  grid-column: 1 / -1; padding: var(--e-6) var(--e-4); text-align: center; color: var(--grafito-2);
+  display: flex; flex-direction: column; align-items: center; gap: var(--e-3); font-size: var(--t-sm);
+}
+.estado-error p { color: var(--margen); font-weight: 700; }
+.historial-vacio { padding: var(--e-5) var(--e-3); }
+
+/* Esqueleto de carga */
+.esqueleto { height: 148px; border-radius: var(--r-panel); background: linear-gradient(90deg, var(--hoja) 0%, var(--hoja-2) 50%, var(--hoja) 100%); background-size: 200% 100%; border: 1px solid var(--renglon); animation: brillo 1.2s linear infinite; }
+@keyframes brillo { to { background-position: -200% 0; } }
+
+/* ---------- 7. El cuaderno: venta en curso ---------- */
+.invoice-panel {
+  position: sticky; top: 96px;
+  display: flex; flex-direction: column; gap: var(--e-4);
+  max-height: calc(100vh - 116px); overflow-y: auto;
+  padding: var(--e-5) var(--e-5) var(--e-5);
+  background: var(--hoja); border: 1px solid var(--renglon); border-radius: var(--r-panel);
+  scrollbar-width: thin;
+}
+.invoice-panel > * { flex-shrink: 0; }   /* con scroll, nada se encoge ni se encima */
+.panel-titulo { display: flex; align-items: center; justify-content: space-between; gap: var(--e-2); }
+.panel-titulo h2 { font-size: var(--t-xl); }
+.panel-titulo .btn-vaciar { min-height: 34px; padding: 0 var(--e-3); font-size: var(--t-xs); }
+
+/* Hoja rayada con margen rojo */
+.hoja-cuaderno {
+  --alto-renglon: 40px;
+  position: relative;
+  margin: 0 calc(var(--e-5) * -1);
+  padding: 0 var(--e-5) 0 52px;
+  min-height: calc(var(--alto-renglon) * 3);
+  background:
+    linear-gradient(to right, transparent 38px, var(--margen) 38px, var(--margen) 39.5px, transparent 39.5px),
+    repeating-linear-gradient(to bottom, transparent 0, transparent calc(var(--alto-renglon) - 1px), var(--renglon-azul) calc(var(--alto-renglon) - 1px), var(--renglon-azul) var(--alto-renglon));
+  border-top: 1px solid var(--renglon-azul);
+}
+/* Cada producto ocupa dos renglones: nombre y subtotal arriba; cantidad y acciones abajo */
+.factura-linea {
+  display: grid; grid-template-columns: auto 1fr auto auto;
+  grid-template-rows: repeat(2, var(--alto-renglon));
+  grid-template-areas: "nombre nombre nombre subtotal" "cantidad . editar eliminar";
+  align-items: center; column-gap: var(--e-2); font-size: var(--t-sm);
+}
+.factura-linea-nombre { grid-area: nombre; font-weight: 700; line-height: 1.2; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: var(--t-md); }
+.factura-linea-subtotal { grid-area: subtotal; text-align: right; font-weight: 700; font-size: var(--t-md); }
+.factura-linea-cantidad { grid-area: cantidad; display: inline-flex; align-items: center; border: 1px solid var(--renglon); border-radius: var(--r-control); background: var(--hoja); }
+.factura-linea-cantidad button { width: 32px; height: 30px; border: 0; background: transparent; font-weight: 800; color: var(--grafito-2); border-radius: var(--r-control); }
+.factura-linea-cantidad button:hover { color: var(--tinta); background: var(--tinta-suave); }
+.factura-linea-cantidad span { min-width: 28px; text-align: center; font-weight: 700; }
+.factura-linea [data-accion="editar"] { grid-area: editar; }
+.factura-linea [data-accion="eliminar"] { grid-area: eliminar; }
+.factura-linea .btn-eliminar { width: 32px; height: 32px; }
+#factura-vacia { min-height: calc(var(--alto-renglon) * 3); display: flex; align-items: center; color: var(--grafito-3); font-size: var(--t-sm); line-height: var(--alto-renglon); }
+#factura-vacia p { line-height: 1.5; }
+
+.venta-opciones { display: grid; grid-template-columns: 1fr 1fr; gap: var(--e-3); }
+
+.payment-methods-section { display: flex; flex-direction: column; gap: 6px; }
+.payment-title { font-size: var(--t-sm); font-weight: 700; color: var(--grafito-2); }
+.payment-buttons { display: grid; grid-template-columns: repeat(3, 1fr); padding: 3px; gap: 3px; border-radius: 11px; background: var(--hoja-2); border: 1px solid var(--renglon); }
+.btn-payment {
+  min-height: 38px; border: 0; border-radius: 8px; background: transparent;
+  color: var(--grafito-2); font-weight: 700; font-size: var(--t-sm);
+}
+.btn-payment:hover { color: var(--grafito); }
+.btn-payment.selected { background: var(--hoja); color: var(--tinta); box-shadow: 0 1px 3px rgba(20,30,60,.14), inset 0 0 0 1px var(--renglon); }
+/* Pestañas y selector de tipo reusan .btn-payment */
+.pestanas, .selector-tipo { display: inline-grid; grid-auto-flow: column; padding: 3px; gap: 3px; border-radius: 11px; background: var(--hoja-2); border: 1px solid var(--renglon); }
+.pestanas .btn-payment, .selector-tipo .btn-payment { padding: 0 var(--e-4); }
+
+.invoice-totals { display: flex; flex-direction: column; gap: 6px; padding-top: var(--e-3); border-top: 1px dashed var(--renglon); }
+.invoice-totals .row { display: flex; justify-content: space-between; gap: var(--e-3); font-size: var(--t-sm); color: var(--grafito-2); }
+.invoice-totals .row.total { align-items: baseline; color: var(--grafito); margin: var(--e-1) 0; }
+.invoice-totals .row.total span:first-child { font-family: var(--fuente-titulo); font-size: var(--t-lg); font-weight: 700; }
+/* El total, marcado con resaltador */
+.invoice-totals .row.total span:last-child, .marcado {
+  font-family: var(--fuente-titulo); font-size: var(--t-2xl); font-weight: 800; color: var(--grafito);
+  padding: 0 6px; margin-right: -6px;
+  background: linear-gradient(100deg, transparent 2%, var(--resaltador) 4%, var(--resaltador) 96%, transparent 98%) 0 62% / 100% 58% no-repeat;
+}
+body.dark-mode .invoice-totals .row.total span:last-child, body.dark-mode .marcado { color: var(--resaltador-texto); background-size: 100% 80%; background-position: 0 70%; }
+.fila-descuento span:last-child { color: var(--exito); font-weight: 700; }
+.venta-botones { display: grid; grid-template-columns: 1fr; gap: var(--e-2); }
+.btn-cerrar { min-height: 52px; font-size: var(--t-md); width: 100%; }
+.btn-cerrar kbd { background: rgba(255,255,255,.14); border-color: rgba(255,255,255,.3); color: #fff; }
+.btn-guardar-factura { width: 100%; }
+
+.historial-section { display: flex; flex-direction: column; gap: var(--e-2); padding-top: var(--e-3); border-top: 1px solid var(--renglon); }
+.historial-section h2 { font-size: var(--t-md); }
+.factura-card { display: flex; align-items: center; justify-content: space-between; gap: var(--e-2); padding: var(--e-2) var(--e-3); border-radius: var(--r-control); background: var(--hoja-2); border: 1px solid var(--renglon); }
+.factura-card h3 { font-size: var(--t-md); }
+.factura-card p { font-size: var(--t-xs); color: var(--grafito-3); }
+
+/* ---------- 8. Módulos (listas, filtros) ---------- */
+.modulo-section {
+  grid-column: 1 / -1; min-width: 0;
+  background: var(--hoja); border: 1px solid var(--renglon); border-radius: var(--r-panel);
+  padding: var(--e-5);
+}
+.modulo-section > h2, .modulo-titulo h2 { font-size: var(--t-lg); }
+.modulo-titulo { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: var(--e-3); margin-bottom: var(--e-4); }
+.modulo-titulo-acciones { display: flex; gap: var(--e-2); flex-wrap: wrap; }
+.subseccion { margin-top: var(--e-6); padding-top: var(--e-5); border-top: 1px solid var(--renglon); }
+.subseccion > h2 { font-size: var(--t-lg); margin-bottom: var(--e-1); }
+.nota-rol { font-size: var(--t-sm); color: var(--grafito-3); margin-top: var(--e-1); }
+.nota-rol:empty { display: none; }
+
+.filtros { display: flex; flex-wrap: wrap; gap: var(--e-3); align-items: flex-end; margin-bottom: var(--e-4); padding: var(--e-3); border-radius: 12px; background: var(--hoja-2); border: 1px solid var(--renglon); }
+.filtros .campo { flex: 1; min-width: 150px; }
+
+.registro-lista { display: flex; flex-direction: column; border-top: 1px solid var(--renglon); max-height: 560px; overflow-y: auto; }
+.registro-fila {
+  display: flex; justify-content: space-between; align-items: center; gap: var(--e-3);
+  padding: var(--e-3) var(--e-2); border-bottom: 1px solid var(--renglon);
+  transition: background-color .12s ease;
+}
+.registro-fila:hover { background: var(--hoja-2); }
+.registro-info { display: flex; flex-direction: column; gap: 3px; min-width: 0; }
+.registro-info strong { font-size: var(--t-md); font-weight: 700; }
+.registro-info span { font-size: var(--t-sm); color: var(--grafito-3); }
+.registro-info .chips { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 2px; }
+.registro-acciones { display: flex; gap: var(--e-2); flex-shrink: 0; flex-wrap: wrap; justify-content: flex-end; }
+.registro-acciones .btn-vaciar, .registro-acciones .btn-recuperar { min-height: 36px; padding: 0 var(--e-3); }
+
+.chip { display: inline-flex; align-items: center; gap: 5px; padding: 2px 9px; border-radius: 999px; font-size: var(--t-xs); font-weight: 700; background: var(--hoja-2); color: var(--grafito-2); border: 1px solid var(--renglon); }
+.chip-corregida { background: var(--tinta-suave); color: var(--tinta); border-color: transparent; }
+.chip-parcial { background: var(--aviso-suave); color: var(--aviso); border-color: transparent; }
+.chip-total { background: var(--margen-suave); color: var(--margen); border-color: transparent; }
+.chip-ok { background: var(--exito-suave); color: var(--exito); border-color: transparent; }
+.chip-admin { background: var(--resaltador); color: var(--resaltador-texto); border-color: transparent; }
+
+.form-linea, .fila-campos {
+  display: flex; flex-wrap: wrap; gap: var(--e-3); align-items: flex-end;
+  margin: var(--e-4) 0; padding: var(--e-4); border-radius: 12px; background: var(--hoja-2); border: 1px solid var(--renglon);
+}
+.form-linea .campo, .fila-campos .campo { flex: 1; min-width: 160px; }
+.form-linea .campo-corto, .fila-campos .campo-corto { flex: 0 1 140px; min-width: 110px; }
+.fila-campos + .fila-campos { margin-top: calc(var(--e-4) * -1); border-top: 0; border-radius: 0 0 12px 12px; }
+.fila-campos:has(+ .fila-campos) { border-radius: 12px 12px 0 0; margin-bottom: 0; }
+
+.compra-items { margin: var(--e-3) 0; border-top: 1px solid var(--renglon); }
+.compra-item { display: flex; justify-content: space-between; align-items: center; gap: var(--e-3); padding: var(--e-2) var(--e-2); border-bottom: 1px solid var(--renglon); font-size: var(--t-sm); }
+.compra-item > span:last-child { display: flex; align-items: center; gap: var(--e-2); }
+.compra-pie { display: flex; justify-content: space-between; align-items: center; gap: var(--e-3); flex-wrap: wrap; padding-top: var(--e-3); }
+.compra-pie strong { font-family: var(--fuente-titulo); }
+.btn-auto { width: auto; }
+
+/* ---------- 9. Modal, diálogo, factura ---------- */
+.modal-overlay {
+  position: fixed; inset: 0; z-index: 100; display: grid; place-items: center; padding: var(--e-4);
+  background: rgba(16, 22, 40, 0.48);
+}
+.modal-card {
+  width: 100%; max-width: 440px; max-height: calc(100vh - 32px); overflow-y: auto;
+  padding: var(--e-5); border-radius: 16px; background: var(--hoja); box-shadow: var(--sombra-flotante);
+  animation: aparecer .16s ease-out;
+}
+.modal-card.modal-grande { max-width: 600px; }
+@keyframes aparecer { from { opacity: 0; transform: translateY(8px) scale(.99); } }
+.modal-card h3 { font-size: var(--t-xl); margin-bottom: var(--e-2); }
+.modal-buttons { display: flex; justify-content: flex-end; flex-wrap: wrap; gap: var(--e-2); margin-top: var(--e-5); }
+.form-modal { display: flex; flex-direction: column; gap: var(--e-4); }
+.form-modal-fila { display: grid; grid-template-columns: 1fr 1fr; gap: var(--e-3); }
+
+.dialogo-card { max-width: 420px; }
+.dialogo-card p { color: var(--grafito-2); }
+.dialogo-card .btn-modal-primario.peligro { background: var(--margen); color: #fff; }
+
+.factura-doc { color: var(--grafito); }
+.factura-encabezado { display: flex; align-items: center; gap: var(--e-3); padding-bottom: var(--e-3); border-bottom: 1px dashed var(--renglon); }
+.factura-encabezado img { width: 48px; height: 48px; border-radius: 50%; }
+.factura-encabezado h3 { margin: 0; }
+.factura-encabezado p { font-size: var(--t-sm); color: var(--grafito-3); }
+.factura-datos { display: grid; grid-template-columns: 1fr 1fr; gap: 4px var(--e-4); margin: var(--e-3) 0; font-size: var(--t-sm); }
+.factura-marca { margin: var(--e-2) 0; padding: var(--e-2) var(--e-3); border-radius: var(--r-control); font-size: var(--t-sm); background: var(--tinta-suave); color: var(--tinta); }
+.factura-reembolsos { margin-top: var(--e-4); font-size: var(--t-sm); }
+.factura-reembolsos h4 { font-size: var(--t-md); margin-bottom: var(--e-2); }
+.factura-gracias { text-align: center; margin-top: var(--e-4); color: var(--grafito-3); font-size: var(--t-sm); }
+.factura-doc .invoice-totals .row.total span:last-child { font-size: var(--t-xl); }
+
+.tabla-scroll { overflow-x: auto; }
+.tabla-detalle { width: 100%; border-collapse: collapse; font-size: var(--t-sm); }
+.tabla-detalle th, .tabla-detalle td { padding: 8px 6px; border-bottom: 1px solid var(--renglon); text-align: left; vertical-align: middle; }
+.tabla-detalle th { font-size: var(--t-xs); color: var(--grafito-3); font-weight: 700; }
+.tabla-detalle .num { text-align: right; white-space: nowrap; }
+.tabla-detalle small { color: var(--grafito-3); }
+
+.resumen-modal { margin-top: var(--e-3); padding: var(--e-3) var(--e-4); border-radius: 12px; background: var(--hoja-2); border: 1px solid var(--renglon); font-size: var(--t-sm); }
+.resumen-modal .row { display: flex; justify-content: space-between; gap: var(--e-3); margin: 3px 0; color: var(--grafito-2); }
+.resumen-modal .row.total { color: var(--grafito); font-weight: 700; font-size: var(--t-md); }
+.aviso-exito { background: var(--exito-suave); border-color: transparent; color: var(--exito); font-weight: 700; display: flex; gap: var(--e-2); align-items: center; }
+
+.editor-lineas { display: flex; flex-direction: column; border-top: 1px solid var(--renglon); margin: var(--e-3) 0; }
+.editor-linea { display: grid; grid-template-columns: minmax(0, 1fr) 76px auto auto; gap: var(--e-3); align-items: center; padding: var(--e-2) 0; border-bottom: 1px solid var(--renglon); font-size: var(--t-sm); }
+.editor-linea > span:first-child { font-weight: 700; }
+.editor-linea small { display: block; font-weight: 400; color: var(--grafito-3); }
+.editor-linea input[type="number"] { min-height: 38px; text-align: center; padding: 0 4px; }
+.editor-linea .num { text-align: right; white-space: nowrap; min-width: 80px; font-weight: 700; }
+.reembolso-linea { grid-template-columns: minmax(0, 1fr) 76px auto; }
+.reembolso-linea .check-linea { grid-column: 1 / -1; font-size: var(--t-xs); color: var(--grafito-2); }
+.editor-agregar { display: flex; gap: var(--e-2); align-items: flex-end; flex-wrap: wrap; }
+.editor-agregar .campo { flex: 1; min-width: 180px; }
+
+.grupo-proveedor { margin-top: var(--e-4); }
+.grupo-proveedor h3 { font-size: var(--t-md); margin-bottom: var(--e-2); display: flex; align-items: center; gap: var(--e-2); }
+
+/* ---------- 10. Reportes ---------- */
+.atajos-fecha { display: flex; gap: 6px; flex-wrap: wrap; }
+.atajos-fecha .btn-vaciar { min-height: 42px; }
+.reportes-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(340px, 1fr)); gap: var(--e-4); }
+.reporte-tarjeta { min-width: 0; padding: var(--e-5); border: 1px solid var(--renglon); border-radius: var(--r-panel); background: var(--hoja); }
+.reporte-tarjeta h3 { font-size: var(--t-lg); margin-bottom: 2px; }
+.reporte-tarjeta > p.sub { font-size: var(--t-sm); color: var(--grafito-3); margin-bottom: var(--e-4); }
+.reporte-ancho { grid-column: 1 / -1; }
+
+.kpis { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: var(--e-3); margin-bottom: var(--e-4); }
+.kpi { padding: var(--e-3) var(--e-4); border-radius: 12px; background: var(--hoja-2); border: 1px solid var(--renglon); }
+.kpi span { display: block; font-size: var(--t-xs); color: var(--grafito-3); font-weight: 700; }
+.kpi strong { display: block; font-family: var(--fuente-titulo); font-size: var(--t-xl); margin-top: 2px; }
+.kpi.principal { background: var(--tinta); border-color: var(--tinta); }
+.kpi.principal span { color: #C9D4F5; }
+.kpi.principal strong { color: #fff; }
+body.dark-mode .kpi.principal strong, body.dark-mode .kpi.principal span { color: #0E1630; }
+
+/* Barras horizontales (una serie: un solo tono, extremo redondeado de 4px) */
+.barras { display: flex; flex-direction: column; gap: 10px; }
+.barra-fila { display: grid; grid-template-columns: minmax(90px, 44%) 1fr auto; gap: var(--e-3); align-items: center; font-size: var(--t-sm); position: relative; }
+.barra-fila .nombre { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: var(--grafito); }
+.barra-fila .nombre small { color: var(--grafito-3); }
+.barra-pista { height: 14px; position: relative; }
+.barra { height: 14px; min-width: 3px; border-radius: 0 4px 4px 0; background: var(--tinta); }
+.barra-fila .valor { font-weight: 700; text-align: right; white-space: nowrap; }
+.barra-fila:hover .barra, .barra-fila:focus-within .barra { background: var(--tinta-2); }
+
+/* Columnas por día */
+.columnas { display: grid; grid-auto-flow: column; grid-auto-columns: minmax(18px, 1fr); align-items: end; gap: 2px; height: 160px; padding-top: 22px; border-bottom: 1px solid var(--renglon); position: relative; }
+.columna { position: relative; height: 100%; display: flex; align-items: flex-end; justify-content: center; }
+.columna .barra-v { width: min(24px, 100%); border-radius: 4px 4px 0 0; background: var(--tinta); min-height: 2px; }
+.columna:hover .barra-v, .columna:focus-visible .barra-v { background: var(--tinta-2); }
+.columnas-ejes { display: flex; justify-content: space-between; font-size: var(--t-xs); color: var(--grafito-3); margin-top: 6px; }
+
+/* Tooltip de las gráficas (hover y foco) */
+[data-tip] { cursor: default; }
+[data-tip]:hover::after, [data-tip]:focus-visible::after {
+  content: attr(data-tip); position: absolute; z-index: 5; bottom: calc(100% + 6px); left: 50%; transform: translateX(-50%);
+  padding: 6px 10px; border-radius: 8px; background: var(--grafito); color: var(--hoja);
+  font-size: var(--t-xs); font-weight: 700; white-space: nowrap; pointer-events: none;
+}
+.barra-fila[data-tip]:hover::after, .barra-fila[data-tip]:focus-visible::after { left: auto; right: 0; transform: none; }
+.tabla-datos { margin-top: var(--e-3); font-size: var(--t-sm); }
+.tabla-datos summary { cursor: pointer; color: var(--tinta); font-weight: 700; width: fit-content; border-radius: 6px; }
+
+/* ---------- 11. Toast ---------- */
+.toast {
+  position: fixed; left: 50%; bottom: 24px; z-index: 300; transform: translate(-50%, 16px);
+  display: flex; align-items: center; gap: var(--e-2);
+  max-width: min(92vw, 480px); padding: 12px 16px; border-radius: 12px;
+  background: var(--grafito); color: var(--hoja); font-size: var(--t-sm); font-weight: 700;
+  box-shadow: var(--sombra-flotante); opacity: 0; pointer-events: none; transition: opacity .2s ease, transform .2s ease;
+}
+.toast.visible { opacity: 1; transform: translate(-50%, 0); }
+.toast.exito { background: var(--exito); color: #fff; }
+.toast.error { background: var(--margen); color: #fff; }
+body.dark-mode .toast.exito, body.dark-mode .toast.error { color: #111; }
+
+/* ---------- 12. Botón flotante "ver venta" (celular) ---------- */
+.ir-venta-movil { display: none; }
+
+/* ---------- 13. Login ---------- */
+.login-pagina { min-height: 100vh; display: grid; grid-template-columns: 1.1fr 1fr; }
+.login-portada {
+  position: relative; overflow: hidden; padding: 48px;
+  display: flex; flex-direction: column; justify-content: space-between;
+  background: #1B2A5C; color: #E7ECFA;
+}
+.login-portada .marca strong { font-size: var(--t-xl); }
+.login-portada h1 { font-size: clamp(2rem, 4vw, 3.2rem); color: #fff; max-width: 13ch; line-height: 1.05; }
+.login-portada h1 .marcado { color: #1B2A5C; font-size: inherit; padding: 0 .12em; }
+.login-portada p { max-width: 42ch; color: #C3CDEB; margin-top: var(--e-4); font-size: var(--t-md); }
+/* renglones de cuaderno en la portada */
+.login-portada::before {
+  content: ""; position: absolute; inset: 0; pointer-events: none; opacity: .5;
+  background:
+    linear-gradient(to right, transparent 72px, rgba(255,120,140,.45) 72px, rgba(255,120,140,.45) 74px, transparent 74px),
+    repeating-linear-gradient(to bottom, transparent 0 39px, rgba(201,214,242,.14) 39px 40px);
+}
+.login-portada > * { position: relative; }
+.login-formulario { display: grid; place-items: center; padding: var(--e-6) var(--e-4); background: var(--hoja); }
+.login-tarjeta { width: 100%; max-width: 360px; display: flex; flex-direction: column; gap: var(--e-4); }
+.login-tarjeta h2 { font-size: var(--t-2xl); }
+.login-sub { color: var(--grafito-2); margin-top: 6px; }
+.login-aviso { padding: var(--e-3); border-radius: var(--r-control); background: var(--margen-suave); color: var(--margen); font-size: var(--t-sm); font-weight: 700; }
+.login-aviso.info { background: var(--tinta-suave); color: var(--tinta); }
+.login-tarjeta .btn-cerrar { margin-top: var(--e-2); }
+.login-nota { font-size: var(--t-xs); color: var(--grafito-3); }
+.campo-clave { position: relative; }
+.campo-clave input { padding-right: 48px; }
+.campo-clave button { position: absolute; right: 4px; bottom: 3px; width: 36px; height: 36px; border: 0; background: transparent; color: var(--grafito-3); border-radius: 8px; display: grid; place-items: center; }
+
+/* ---------- 14. Responsive ---------- */
+@media (max-width: 1280px) {
+  :root { --cuaderno: 360px; --rail: 212px; }
+  .app-layout, .topbar { padding-left: var(--e-5); padding-right: var(--e-5); }
+}
+@media (max-width: 1080px) {
+  .app-layout.vista-venta { grid-template-columns: 1fr; }
+  .invoice-panel { position: static; max-height: none; overflow: visible; margin-bottom: 72px; }
+  .ir-venta-movil {
+    display: flex; align-items: center; justify-content: space-between; gap: var(--e-3);
+    position: fixed; left: 16px; right: 16px; bottom: 16px; z-index: 60;
+    min-height: 56px; padding: 0 var(--e-4); border: 0; border-radius: 14px;
+    background: var(--tinta); color: #fff; font-weight: 700; box-shadow: var(--sombra-flotante);
+  }
+  body.dark-mode .ir-venta-movil { color: #0E1630; }
+  .ir-venta-movil .marcado { font-size: var(--t-lg); color: var(--resaltador-texto); }
+  .ir-venta-movil { transition: transform .2s ease, opacity .2s ease; }
+  .ir-venta-movil.panel-visible { transform: translateY(140%); opacity: 0; pointer-events: none; }
+  .invoice-panel { margin-bottom: 16px; }
+}
+@media (max-width: 860px) {
+  .shell { grid-template-columns: 1fr; }
+  .rail {
+    position: fixed; inset: 0 auto 0 0; z-index: 200; width: min(84vw, 300px);
+    transform: translateX(-100%); transition: transform .2s ease; box-shadow: var(--sombra-flotante);
+  }
+  body.menu-abierto .rail { transform: none; }
+  body.menu-abierto .velo { display: block; }
+  .velo { display: none; position: fixed; inset: 0; z-index: 150; background: rgba(16,22,40,.48); }
+  .btn-menu { display: inline-grid; }
+  .topbar { padding: var(--e-3) var(--e-4); min-height: 60px; }
+  .topbar h1 { font-size: var(--t-lg); }
+  .topbar .ayuda { display: none; }
+  .app-layout { padding: var(--e-4); }
+  .modulo-section, .invoice-panel { padding: var(--e-4); }
+  .hoja-cuaderno { margin: 0 calc(var(--e-4) * -1); padding-right: var(--e-4); }
+  .login-pagina { grid-template-columns: 1fr; }
+  .login-portada { padding: 28px 24px; min-height: auto; gap: var(--e-5); }
+  .login-portada p { display: none; }
+}
+@media (max-width: 560px) {
+  .catalog-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--e-2); }
+  .product-card { padding: 10px; min-width: 0; }
+  .product-left { gap: var(--e-2); }
+  .product-photo { width: 36px; height: 36px; font-size: var(--t-sm); }
+  .product-name { font-size: var(--t-sm); overflow-wrap: anywhere; }
+  .product-price { font-size: var(--t-md); }
+  .qty-input { width: 42px; padding: 0 2px; }
+  .product-actions .btn-add, .product-actions .btn-faltante { min-width: 0; padding: 0 8px; font-size: var(--t-xs); }
+  .product-right { flex-direction: column; align-items: stretch; }
+  .product-actions .btn-add { flex: 1; }
+  .registro-fila { flex-direction: column; align-items: stretch; }
+  .registro-acciones { justify-content: flex-start; }
+  .form-modal-fila, .factura-datos, .venta-opciones { grid-template-columns: 1fr; }
+  .reportes-grid { grid-template-columns: 1fr; }
+  .modal-overlay { padding: 0; align-items: end; }
+  .modal-card { max-height: 92vh; border-radius: 18px 18px 0 0; }
+  .modal-buttons { justify-content: stretch; }
+  .modal-buttons > * { flex: 1; }
+  .editor-linea { grid-template-columns: minmax(0, 1fr) 68px auto; }
+  .editor-linea .num { grid-column: 1 / 2; text-align: left; min-width: 0; }
+  .pestanas { display: grid; grid-auto-flow: row; grid-template-columns: repeat(3, 1fr); width: 100%; }
+}
+
+/* ---------- 15. Imprimir / PDF: solo la factura ---------- */
+@media print {
+  body { background: #fff !important; }
+  body > *:not(#modal) { display: none !important; }
+  #modal { position: static; background: none; display: block; padding: 0; }
+  #modal .modal-card { max-width: 100%; max-height: none; box-shadow: none; border-radius: 0; animation: none; }
+  #modal * { color: #000 !important; }
+  .no-imprimir { display: none !important; }
+  .invoice-totals .row.total span:last-child { background: none; }
+}

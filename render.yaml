@@ -1,0 +1,30 @@
+# Blueprint de Render: crea el backend (Django) y la base de datos PostgreSQL.
+# En Render: New + > Blueprint > elegir este repositorio.
+services:
+  - type: web
+    name: papeleria-lunam-api
+    runtime: python
+    plan: free
+    rootDir: backend
+    buildCommand: "bash build.sh"
+    startCommand: "gunicorn config.wsgi:application"
+    envVars:
+      - key: PYTHON_VERSION
+        value: "3.13.1"
+      - key: DEBUG
+        value: "False"
+      - key: SECRET_KEY
+        generateValue: true
+      - key: DATABASE_URL
+        fromDatabase:
+          name: papeleria-lunam-db
+          property: connectionString
+      # URL del frontend desplegado (sin "/" al final). Varias separadas por coma.
+      - key: CORS_ALLOWED_ORIGINS
+        value: "https://papel-y-luna-three.vercel.app,https://papeleria-lunam.vercel.app"
+
+databases:
+  - name: papeleria-lunam-db
+    plan: free
+    databaseName: pos_papel_luna
+    user: pos_papel_luna

@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Ingresar — Papel y Luna</title>
+  <meta name="theme-color" content="#1B2A5C">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible+Next:wght@400;700;800&family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,700;12..96,800&display=swap">
+  <link rel="stylesheet" href="css/pos.css">
+  <link rel="icon" href="img/logo.png">
+</head>
+<body>
+  <main class="login-pagina">
+    <section class="login-portada" aria-hidden="true">
+      <div class="marca">
+        <img src="img/logo.png" alt="">
+        <div>
+          <strong>Papel y Luna</strong>
+          <span>Papelería y miscelánea</span>
+        </div>
+      </div>
+      <div>
+        <h1>Cada venta, en su renglón.</h1>
+        <p>Cobra, guarda ventas para después, controla el inventario y anota lo que te piden y no tienes.</p>
+      </div>
+    </section>
+
+    <section class="login-formulario">
+      <form id="form-login" class="login-tarjeta" novalidate>
+        <div>
+          <h2>Ingresar</h2>
+          <p class="login-sub">Usa tu usuario de caja o de administración.</p>
+        </div>
+
+        <p id="login-aviso" class="login-aviso oculto" role="alert"></p>
+
+        <div class="campo">
+          <label for="usuario">Usuario</label>
+          <input type="text" id="usuario" autocomplete="username" autocapitalize="none" spellcheck="false" required autofocus>
+        </div>
+        <div class="campo campo-clave">
+          <label for="clave">Contraseña</label>
+          <input type="password" id="clave" autocomplete="current-password" required>
+          <button type="button" id="btn-ver-clave" aria-label="Mostrar contraseña" aria-pressed="false">
+            <svg class="icono" viewBox="0 0 24 24"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/></svg>
+          </button>
+        </div>
+
+        <button type="submit" id="btn-entrar" class="btn-cerrar">Ingresar</button>
+        <p class="login-nota">Las credenciales iniciales están en el README del proyecto.</p>
+      </form>
+    </section>
+  </main>
+
+  <script type="module" src="js/login.js"></script>
+</body>
+</html>
