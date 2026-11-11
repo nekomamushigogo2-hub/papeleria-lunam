@@ -13,7 +13,7 @@ backend propio en **Django REST Framework** y base de datos **PostgreSQL** (SQLi
 
 | Qué | URL |
 |---|---|
-| Frontend (Vercel) | https://papeleria-lunam.vercel.app |
+| Frontend (Vercel) | https://papel-y-luna-three.vercel.app |
 | Backend / API (Render) | https://papeleria-lunam-api.onrender.com/api/ |
 | Repositorio | https://github.com/nekomamushigogo2-hub/papeleria-lunam |
 

@@ -21,7 +21,7 @@ services:
           property: connectionString
       # URL del frontend desplegado (sin "/" al final). Varias separadas por coma.
       - key: CORS_ALLOWED_ORIGINS
-        value: "https://papel-y-luna.vercel.app,https://papeleria-lunam.vercel.app"
+        value: "https://papel-y-luna-three.vercel.app,https://papeleria-lunam.vercel.app"
 
 databases:
   - name: papeleria-lunam-db
