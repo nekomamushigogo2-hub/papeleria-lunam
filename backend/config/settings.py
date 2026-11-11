@@ -129,6 +129,12 @@ SIMPLE_JWT = {
 # Local: cualquier origen (Live Server, file://, etc.).
 # Producción: CORS_ALLOWED_ORIGINS=https://papeleria-lunam.vercel.app
 CORS_ALLOWED_ORIGINS = env_lista("CORS_ALLOWED_ORIGINS")
+# Además, cualquier URL de Vercel de este proyecto (producción y vistas previas):
+# https://papel-y-luna-three.vercel.app, https://papeleria-lunam-abc123.vercel.app, ...
+CORS_ALLOWED_ORIGIN_REGEXES = env_lista(
+    "CORS_ALLOWED_ORIGIN_REGEXES",
+    r"^https://(papel-y-luna|papeleria-lunam)[a-z0-9-]*\.vercel\.app$",
+)
 CORS_ALLOW_ALL_ORIGINS = not CORS_ALLOWED_ORIGINS
 
 if not DEBUG:
