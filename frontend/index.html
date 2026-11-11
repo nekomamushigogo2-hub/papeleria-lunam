@@ -1,0 +1,450 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Papel y Luna — Punto de venta</title>
+  <meta name="theme-color" content="#1B2A5C">
+
+  <!-- Sin sesión guardada no se muestra nada: directo al login -->
+  <script>
+    if (!localStorage.getItem("pos_sesion")) location.replace("login.html");
+  </script>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible+Next:wght@400;700;800&family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,700;12..96,800&display=swap">
+  <link rel="stylesheet" href="css/pos.css">
+  <link rel="icon" href="img/logo.png">
+</head>
+<body>
+
+  <!-- Íconos (se usan con <svg class="icono"><use href="#i-nombre"/></svg>) -->
+  <svg width="0" height="0" style="position:absolute" aria-hidden="true">
+    <symbol id="i-venta" viewBox="0 0 24 24"><path d="M6 3h12v18l-3-2-3 2-3-2-3 2z"/><path d="M9 8h6M9 12h6"/></symbol>
+    <symbol id="i-ventas" viewBox="0 0 24 24"><path d="M4 6h16M4 12h16M4 18h10"/></symbol>
+    <symbol id="i-productos" viewBox="0 0 24 24"><path d="m12 3 8 4.5v9L12 21l-8-4.5v-9z"/><path d="m4 7.5 8 4.5 8-4.5M12 12v9"/></symbol>
+    <symbol id="i-compras" viewBox="0 0 24 24"><path d="M3 6h11v10H3zM14 9h4l3 3v4h-7"/><circle cx="7" cy="18" r="2"/><circle cx="17" cy="18" r="2"/></symbol>
+    <symbol id="i-entidades" viewBox="0 0 24 24"><circle cx="9" cy="8" r="3.5"/><path d="M3 20c0-3.3 2.7-6 6-6s6 2.7 6 6"/><path d="M16 4.5a3.5 3.5 0 0 1 0 7M21 20c0-2.6-1.6-4.8-4-5.6"/></symbol>
+    <symbol id="i-descuentos" viewBox="0 0 24 24"><path d="M3 12V4h8l10 10-8 8z"/><circle cx="7.5" cy="8.5" r="1.5"/></symbol>
+    <symbol id="i-faltantes" viewBox="0 0 24 24"><path d="M8 4h8v3H8z"/><path d="M16 5h3v16H5V5h3"/><path d="M9 12h6M9 16h4"/></symbol>
+    <symbol id="i-reportes" viewBox="0 0 24 24"><path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/></symbol>
+    <symbol id="i-buscar" viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="m20 20-4-4"/></symbol>
+    <symbol id="i-editar" viewBox="0 0 24 24"><path d="M4 20h4L19 9l-4-4L4 16z"/><path d="m13.5 6.5 4 4"/></symbol>
+    <symbol id="i-eliminar" viewBox="0 0 24 24"><path d="M4 7h16M10 11v6M14 11v6M6 7l1 13h10l1-13M9 7V4h6v3"/></symbol>
+    <symbol id="i-salir" viewBox="0 0 24 24"><path d="M15 4h4v16h-4M10 8l-4 4 4 4M6 12h10"/></symbol>
+    <symbol id="i-luna" viewBox="0 0 24 24"><path d="M20 14.5A8 8 0 1 1 9.5 4a6.5 6.5 0 0 0 10.5 10.5z"/></symbol>
+    <symbol id="i-menu" viewBox="0 0 24 24"><path d="M4 7h16M4 12h16M4 17h16"/></symbol>
+    <symbol id="i-cerrar" viewBox="0 0 24 24"><path d="M6 6l12 12M18 6 6 18"/></symbol>
+    <symbol id="i-imprimir" viewBox="0 0 24 24"><path d="M7 9V3h10v6M7 17H4v-7h16v7h-3"/><path d="M7 14h10v7H7z"/></symbol>
+    <symbol id="i-check" viewBox="0 0 24 24"><path d="m5 12 5 5 9-10"/></symbol>
+    <symbol id="i-reembolso" viewBox="0 0 24 24"><path d="M9 14 4 9l5-5"/><path d="M4 9h10a6 6 0 0 1 0 12h-3"/></symbol>
+    <symbol id="i-mas" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></symbol>
+    <symbol id="i-recargar" viewBox="0 0 24 24"><path d="M20 12a8 8 0 1 1-2.3-5.7M20 4v5h-5"/></symbol>
+    <symbol id="i-guardar" viewBox="0 0 24 24"><path d="M5 4h11l3 3v13H5z"/><path d="M8 4v5h7V4M8 20v-6h8v6"/></symbol>
+    <symbol id="i-ojo" viewBox="0 0 24 24"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/></symbol>
+    <symbol id="i-nota" viewBox="0 0 24 24"><path d="M5 4h14v16H5z"/><path d="M9 9h6M9 13h6M9 17h3"/></symbol>
+  </svg>
+
+  <a href="#contenido-principal" class="solo-lector">Saltar al contenido</a>
+
+  <div class="shell">
+
+    <!-- ========== BARRA LATERAL ========== -->
+    <aside class="rail" id="rail" aria-label="Menú principal">
+      <div class="marca">
+        <img src="img/logo.png" alt="">
+        <div>
+          <strong>Papel y Luna</strong>
+          <span>Punto de venta</span>
+        </div>
+      </div>
+
+      <nav class="app-nav" id="app-nav" aria-label="Módulos">
+        <button type="button" data-ir="venta" data-titulo="Nueva venta"><svg class="icono"><use href="#i-venta"/></svg>Nueva venta</button>
+        <button type="button" data-ir="ventas" data-titulo="Historial de ventas"><svg class="icono"><use href="#i-ventas"/></svg>Ventas</button>
+        <button type="button" data-ir="faltantes" data-titulo="Faltantes"><svg class="icono"><use href="#i-faltantes"/></svg>Faltantes</button>
+
+        <p class="nav-grupo">Inventario</p>
+        <button type="button" data-ir="productos" data-titulo="Productos"><svg class="icono"><use href="#i-productos"/></svg>Productos</button>
+        <button type="button" data-ir="compras" data-titulo="Compras" data-solo-admin><svg class="icono"><use href="#i-compras"/></svg>Compras</button>
+        <button type="button" data-ir="descuentos" data-titulo="Descuentos"><svg class="icono"><use href="#i-descuentos"/></svg>Descuentos</button>
+        <button type="button" data-ir="entidades" data-titulo="Clientes, categorías y proveedores"><svg class="icono"><use href="#i-entidades"/></svg>Clientes y más</button>
+
+        <p class="nav-grupo" data-solo-admin>Negocio</p>
+        <button type="button" data-ir="reportes" data-titulo="Reportes" data-solo-admin><svg class="icono"><use href="#i-reportes"/></svg>Reportes</button>
+      </nav>
+
+      <div class="rail-pie">
+        <div class="usuario-tarjeta">
+          <span class="avatar" id="usuario-inicial" aria-hidden="true">?</span>
+          <div>
+            <strong id="usuario-nombre">—</strong>
+            <span id="usuario-rol"></span>
+          </div>
+        </div>
+        <div class="rail-acciones">
+          <button id="btn-tema" type="button" aria-pressed="false"><svg class="icono"><use href="#i-luna"/></svg><span>Modo oscuro</span></button>
+          <button id="btn-salir" type="button"><svg class="icono"><use href="#i-salir"/></svg>Salir</button>
+        </div>
+      </div>
+    </aside>
+    <div class="velo" id="velo"></div>
+
+    <!-- ========== CONTENIDO ========== -->
+    <div class="contenido">
+      <header class="topbar">
+        <button type="button" class="btn-icono btn-menu" id="btn-menu" aria-label="Abrir menú" aria-controls="rail" aria-expanded="false"><svg class="icono"><use href="#i-menu"/></svg></button>
+        <h1 id="titulo-vista">Nueva venta</h1>
+        <p class="ayuda" data-vista-ayuda="venta"><span><kbd>/</kbd> buscar</span><span><kbd>Ctrl</kbd> + <kbd>Enter</kbd> cobrar</span></p>
+      </header>
+
+      <main class="app-layout vista-venta" id="contenido-principal" tabindex="-1">
+
+        <!-- ========== VISTA: NUEVA VENTA ========== -->
+        <section class="catalog-section" data-vista="venta" aria-labelledby="titulo-catalogo">
+          <div class="search-bar" role="search">
+            <svg class="icono"><use href="#i-buscar"/></svg>
+            <label for="buscador" class="solo-lector">Buscar producto</label>
+            <input type="search" id="buscador" placeholder="Buscar por nombre o código" autocomplete="off">
+            <kbd aria-hidden="true">/</kbd>
+          </div>
+
+          <div class="catalog-cabecera">
+            <h2 id="titulo-catalogo">Catálogo</h2>
+            <p class="catalog-count" id="contador-productos" aria-live="polite"></p>
+          </div>
+          <div class="catalog-grid" id="catalogo-grid"></div>
+        </section>
+
+        <aside class="invoice-panel" data-vista="venta" aria-labelledby="titulo-venta">
+          <div class="panel-titulo">
+            <h2 id="titulo-venta">Venta actual</h2>
+            <button id="btn-vaciar" class="btn-vaciar" type="button">Vaciar</button>
+          </div>
+
+          <div class="hoja-cuaderno">
+            <div id="factura-lista" aria-live="polite"></div>
+            <div id="factura-vacia"><p>Busca un producto y pulsa <strong>Agregar</strong>. Aparecerá aquí.</p></div>
+          </div>
+
+          <div class="venta-opciones">
+            <div class="campo">
+              <label for="cliente">Cliente</label>
+              <select id="cliente"><option value="">Sin cliente</option></select>
+            </div>
+            <div class="campo">
+              <label for="descuento">Descuento</label>
+              <select id="descuento"><option value="">Sin descuento</option></select>
+            </div>
+          </div>
+
+          <div class="payment-methods-section" role="group" aria-labelledby="titulo-pago">
+            <p class="payment-title" id="titulo-pago">Método de pago</p>
+            <div class="payment-buttons" id="metodos-pago"></div>
+          </div>
+
+          <div class="campo" id="campo-recibido">
+            <label for="recibido">Recibido en efectivo</label>
+            <input type="number" id="recibido" min="0" step="100" inputmode="numeric" placeholder="0">
+          </div>
+
+          <div class="invoice-totals">
+            <div class="row"><span>Subtotal</span><span id="factura-subtotal">$0</span></div>
+            <div class="row fila-descuento oculto" id="fila-descuento"><span id="factura-descuento-nombre">Descuento</span><span id="factura-descuento">-$0</span></div>
+            <div class="row total"><span>Total</span><span id="factura-total" aria-live="polite">$0</span></div>
+            <div class="row" id="fila-cambio"><span>Cambio</span><span id="factura-cambio">$0</span></div>
+          </div>
+
+          <div class="venta-botones">
+            <button id="btn-cerrar" class="btn-cerrar" type="button">Cobrar</button>
+            <button id="btn-guardar-abierta" class="btn-guardar-factura" type="button"><svg class="icono"><use href="#i-guardar"/></svg>Guardar para después</button>
+          </div>
+
+          <section class="historial-section" aria-labelledby="titulo-abiertas">
+            <h2 id="titulo-abiertas">Ventas guardadas</h2>
+            <div id="historial-lista">
+              <p class="historial-vacio">No hay ventas guardadas.</p>
+            </div>
+          </section>
+        </aside>
+
+        <!-- ========== VISTA: HISTORIAL DE VENTAS ========== -->
+        <section class="modulo-section oculto" id="seccion-historial-ventas" data-vista="ventas" aria-label="Historial de ventas">
+          <div class="filtros">
+            <div class="campo">
+              <label for="filtro-venta-desde">Desde</label>
+              <input type="date" id="filtro-venta-desde">
+            </div>
+            <div class="campo">
+              <label for="filtro-venta-hasta">Hasta</label>
+              <input type="date" id="filtro-venta-hasta">
+            </div>
+            <div class="campo">
+              <label for="filtro-venta-metodo">Método de pago</label>
+              <select id="filtro-venta-metodo">
+                <option value="">Todos</option>
+                <option value="Efectivo">Efectivo</option>
+                <option value="Nequi">Nequi</option>
+                <option value="Debe">Debe</option>
+              </select>
+            </div>
+            <div class="campo">
+              <label for="filtro-venta-cliente">Cliente</label>
+              <select id="filtro-venta-cliente"><option value="">Todos los clientes</option></select>
+            </div>
+            <div class="campo">
+              <label for="filtro-venta-marca">Estado</label>
+              <select id="filtro-venta-marca">
+                <option value="">Todas</option>
+                <option value="corregida">Corregidas</option>
+                <option value="reembolso">Con reembolso</option>
+              </select>
+            </div>
+            <button id="btn-limpiar-filtros-venta" type="button" class="btn-vaciar">Quitar filtros</button>
+          </div>
+
+          <div class="modulo-titulo">
+            <p class="catalog-count" id="historial-ventas-resumen" aria-live="polite"></p>
+            <button id="btn-recargar-historial" type="button" class="btn-vaciar"><svg class="icono"><use href="#i-recargar"/></svg>Actualizar</button>
+          </div>
+          <div id="historial-ventas-lista" class="registro-lista"></div>
+        </section>
+
+        <!-- ========== VISTA: PRODUCTOS ========== -->
+        <section class="modulo-section oculto" id="seccion-productos" data-vista="productos" aria-label="Productos">
+          <div class="modulo-titulo">
+            <div class="campo" style="flex: 1; max-width: 420px;">
+              <label for="buscador-productos">Buscar</label>
+              <input type="search" id="buscador-productos" placeholder="Nombre o código">
+            </div>
+            <div class="modulo-titulo-acciones">
+              <button id="btn-recargar-productos" type="button" class="btn-vaciar"><svg class="icono"><use href="#i-recargar"/></svg>Actualizar</button>
+              <button id="btn-nuevo-producto" type="button" class="btn-add" data-solo-admin><svg class="icono"><use href="#i-mas"/></svg>Nuevo producto</button>
+            </div>
+          </div>
+          <div id="productos-lista" class="registro-lista"></div>
+        </section>
+
+        <!-- ========== VISTA: COMPRAS (solo admin) ========== -->
+        <section class="modulo-section oculto" data-vista="compras" data-solo-admin aria-labelledby="titulo-registrar-compra">
+          <h2 id="titulo-registrar-compra">Registrar una compra</h2>
+          <p class="nota-rol">Al registrarla se suma el stock y se actualiza el costo de cada producto.</p>
+
+          <div class="fila-campos">
+            <div class="campo">
+              <label for="compra-proveedor">Proveedor</label>
+              <select id="compra-proveedor"><option value="">Elige un proveedor</option></select>
+            </div>
+            <div class="campo">
+              <label for="compra-producto">Producto</label>
+              <select id="compra-producto"><option value="">Elige un producto</option></select>
+            </div>
+          </div>
+          <div class="fila-campos">
+            <div class="campo campo-corto">
+              <label for="compra-cantidad">Cantidad</label>
+              <input type="number" id="compra-cantidad" min="1" value="1" inputmode="numeric">
+            </div>
+            <div class="campo campo-corto">
+              <label for="compra-costo">Costo unitario</label>
+              <input type="number" id="compra-costo" min="0" placeholder="0" inputmode="numeric">
+            </div>
+            <button id="btn-agregar-item-compra" type="button" class="btn-vaciar"><svg class="icono"><use href="#i-mas"/></svg>Agregar a la compra</button>
+          </div>
+
+          <div id="compra-items-lista" class="compra-items"></div>
+
+          <div class="compra-pie">
+            <p>Total de la compra <strong class="marcado" id="compra-total-txt">$0</strong></p>
+            <button id="btn-guardar-compra" type="button" class="btn-cerrar btn-auto">Registrar compra</button>
+          </div>
+
+          <div class="subseccion">
+            <div class="modulo-titulo">
+              <h2>Compras registradas</h2>
+              <button id="btn-recargar-compras" type="button" class="btn-vaciar"><svg class="icono"><use href="#i-recargar"/></svg>Actualizar</button>
+            </div>
+            <div class="filtros">
+              <div class="campo">
+                <label for="filtro-compra-proveedor">Proveedor</label>
+                <select id="filtro-compra-proveedor"><option value="">Todos los proveedores</option></select>
+              </div>
+              <div class="campo">
+                <label for="filtro-compra-desde">Desde</label>
+                <input type="date" id="filtro-compra-desde">
+              </div>
+              <div class="campo">
+                <label for="filtro-compra-hasta">Hasta</label>
+                <input type="date" id="filtro-compra-hasta">
+              </div>
+            </div>
+            <p class="catalog-count" id="historial-compras-resumen" aria-live="polite"></p>
+            <div id="historial-compras-lista" class="registro-lista"></div>
+          </div>
+        </section>
+
+        <!-- ========== VISTA: ENTIDADES ========== -->
+        <section class="modulo-section oculto" data-vista="entidades" aria-label="Clientes, categorías y proveedores">
+          <div class="pestanas" role="group" aria-label="Qué listado ver">
+            <button id="tab-clientes" type="button" class="btn-payment selected">Clientes</button>
+            <button id="tab-categorias" type="button" class="btn-payment">Categorías</button>
+            <button id="tab-proveedores" type="button" class="btn-payment">Proveedores</button>
+          </div>
+          <p class="nota-rol" id="nota-entidades"></p>
+
+          <form id="form-entidades" class="form-linea">
+            <input type="hidden" id="entidad-id">
+            <div class="campo">
+              <label for="entidad-nombre">Nombre</label>
+              <input type="text" id="entidad-nombre" required autocomplete="off">
+            </div>
+            <div class="campo campo-extra campo-proveedor">
+              <label for="entidad-nit">NIT</label>
+              <input type="text" id="entidad-nit" autocomplete="off">
+            </div>
+            <div class="campo campo-extra">
+              <label for="entidad-telefono">Teléfono</label>
+              <input type="tel" id="entidad-telefono" autocomplete="off">
+            </div>
+            <div class="campo campo-extra">
+              <label for="entidad-correo">Correo</label>
+              <input type="email" id="entidad-correo" autocomplete="off">
+            </div>
+            <button id="btn-guardar-entidad" type="submit" class="btn-add">Guardar</button>
+            <button id="btn-cancelar-entidad" type="button" class="btn-vaciar oculto">Cancelar</button>
+          </form>
+
+          <div id="entidades-lista" class="registro-lista"></div>
+        </section>
+
+        <!-- ========== VISTA: DESCUENTOS ========== -->
+        <section class="modulo-section oculto" data-vista="descuentos" aria-label="Descuentos">
+          <div class="modulo-titulo">
+            <p class="nota-rol">Se aplican al total de la venta, uno por venta. En "Nueva venta" se eligen en el campo Descuento.</p>
+            <button id="btn-recargar-descuentos" type="button" class="btn-vaciar"><svg class="icono"><use href="#i-recargar"/></svg>Actualizar</button>
+          </div>
+
+          <form id="form-descuento" class="form-linea" data-solo-admin>
+            <input type="hidden" id="descuento-id">
+            <div class="campo">
+              <label for="descuento-nombre">Nombre</label>
+              <input type="text" id="descuento-nombre" placeholder="Cliente frecuente" autocomplete="off">
+            </div>
+            <div class="campo campo-corto">
+              <label for="descuento-tipo">Tipo</label>
+              <select id="descuento-tipo">
+                <option value="porcentaje">Porcentaje (%)</option>
+                <option value="valor">Valor fijo ($)</option>
+              </select>
+            </div>
+            <div class="campo campo-corto">
+              <label for="descuento-valor">Valor</label>
+              <input type="number" id="descuento-valor" min="1" step="1" placeholder="10" inputmode="numeric">
+            </div>
+            <button id="btn-guardar-descuento" type="submit" class="btn-add">Crear descuento</button>
+            <button id="btn-cancelar-descuento" type="button" class="btn-vaciar oculto">Cancelar</button>
+          </form>
+
+          <div id="descuentos-lista" class="registro-lista"></div>
+        </section>
+
+        <!-- ========== VISTA: FALTANTES ========== -->
+        <section class="modulo-section oculto" data-vista="faltantes" aria-label="Faltantes">
+          <div class="modulo-titulo">
+            <p class="nota-rol">Lo que un cliente pidió y no había. Sirve para saber qué comprar.</p>
+            <div class="modulo-titulo-acciones">
+              <button id="btn-recargar-faltantes" type="button" class="btn-vaciar"><svg class="icono"><use href="#i-recargar"/></svg>Actualizar</button>
+              <button id="btn-nuevo-faltante" type="button" class="btn-add"><svg class="icono"><use href="#i-mas"/></svg>Anotar faltante</button>
+            </div>
+          </div>
+
+          <div class="filtros">
+            <div class="campo">
+              <label for="filtro-faltante-tipo">Tipo</label>
+              <select id="filtro-faltante-tipo">
+                <option value="">Todos</option>
+                <option value="agotado">Agotado</option>
+                <option value="inexistente">No lo vendemos</option>
+              </select>
+            </div>
+            <div class="campo">
+              <label for="filtro-faltante-proveedor">Proveedor</label>
+              <select id="filtro-faltante-proveedor"><option value="">Todos</option></select>
+            </div>
+            <div class="campo">
+              <label for="filtro-faltante-estado">Estado</label>
+              <select id="filtro-faltante-estado">
+                <option value="pendiente">Pendientes</option>
+                <option value="resuelto">Resueltos</option>
+                <option value="">Todos</option>
+              </select>
+            </div>
+          </div>
+
+          <p class="catalog-count" id="faltantes-resumen" aria-live="polite"></p>
+          <div id="faltantes-lista" class="registro-lista"></div>
+
+          <div class="subseccion">
+            <h2>Qué pedir en la próxima compra</h2>
+            <p class="nota-rol">Faltantes pendientes agrupados por proveedor. Los nombres parecidos se suman: "Cofias" y "cofia" cuentan como uno.</p>
+            <div id="faltantes-para-compras"></div>
+          </div>
+        </section>
+
+        <!-- ========== VISTA: REPORTES (solo admin) ========== -->
+        <section class="modulo-section oculto" data-vista="reportes" data-solo-admin aria-label="Reportes">
+          <div class="filtros">
+            <div class="campo">
+              <label for="reporte-desde">Desde</label>
+              <input type="date" id="reporte-desde">
+            </div>
+            <div class="campo">
+              <label for="reporte-hasta">Hasta</label>
+              <input type="date" id="reporte-hasta">
+            </div>
+            <div class="atajos-fecha" role="group" aria-label="Rangos rápidos">
+              <button type="button" class="btn-vaciar" data-rango="hoy">Hoy</button>
+              <button type="button" class="btn-vaciar" data-rango="7">Últimos 7 días</button>
+              <button type="button" class="btn-vaciar" data-rango="mes">Este mes</button>
+            </div>
+            <button id="btn-generar-reportes" type="button" class="btn-add">Ver reportes</button>
+          </div>
+
+          <div class="reportes-grid" id="reportes-contenido" aria-live="polite">
+            <p class="historial-vacio">Elige un rango de fechas y pulsa "Ver reportes".</p>
+          </div>
+        </section>
+
+      </main>
+    </div>
+  </div>
+
+  <!-- En celular el panel de venta queda debajo del catálogo: este botón lleva a él -->
+  <button type="button" id="btn-ir-venta" class="ir-venta-movil" data-vista="venta">
+    <span id="ir-venta-items">Venta vacía</span>
+    <span class="marcado" id="ir-venta-total">$0</span>
+  </button>
+
+  <!-- Ventana emergente (factura, corrección, reembolso, formularios) -->
+  <div id="modal" class="modal-overlay oculto">
+    <div class="modal-card modal-grande" id="modal-contenido" role="dialog" aria-modal="true" tabindex="-1"></div>
+  </div>
+
+  <!-- Diálogo de confirmación (encima del modal) -->
+  <div id="dialogo" class="modal-overlay oculto" style="z-index: 250;">
+    <div class="modal-card dialogo-card" role="alertdialog" aria-modal="true" aria-labelledby="dialogo-titulo" aria-describedby="dialogo-texto">
+      <h3 id="dialogo-titulo"></h3>
+      <p id="dialogo-texto"></p>
+      <div class="modal-buttons">
+        <button type="button" class="btn-modal-secundario" id="dialogo-cancelar"></button>
+        <button type="button" class="btn-modal-primario" id="dialogo-aceptar"></button>
+      </div>
+    </div>
+  </div>
+
+  <div id="notificacion" class="toast" role="status" aria-live="polite"></div>
+
+  <script type="module" src="js/main.js"></script>
+</body>
+</html>
