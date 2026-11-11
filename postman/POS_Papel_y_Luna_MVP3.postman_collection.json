@@ -1,0 +1,691 @@
+{
+  "info": {
+    "name": "API POS Papel y Luna (MVP 3)",
+    "description": "Endpoints REST del backend Django. Ejecuta primero 'Login admin': guarda el token en {{token}} y las demás peticiones lo usan. 'Login cajero' guarda {{tokenCajero}} para probar las restricciones por rol. Cambia {{base}} por la URL desplegada para probar en Render.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "auth": {
+    "type": "bearer",
+    "bearer": [
+      {
+        "key": "token",
+        "value": "{{token}}",
+        "type": "string"
+      }
+    ]
+  },
+  "variable": [
+    {
+      "key": "base",
+      "value": "http://127.0.0.1:8000/api"
+    },
+    {
+      "key": "token",
+      "value": ""
+    },
+    {
+      "key": "tokenCajero",
+      "value": ""
+    },
+    {
+      "key": "ventaId",
+      "value": "1"
+    },
+    {
+      "key": "itemId",
+      "value": "1"
+    }
+  ],
+  "item": [
+    {
+      "name": "1. Autenticación",
+      "item": [
+        {
+          "name": "Login admin",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('200 OK', () => pm.response.to.have.status(200));",
+                  "const r = pm.response.json();",
+                  "pm.collectionVariables.set('token', r.access);",
+                  "pm.test('rol admin', () => pm.expect(r.usuario.rol).to.eql('admin'));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"username\": \"admin\",\n  \"password\": \"Admin2026*\"\n}"
+            },
+            "url": "{{base}}/auth/login/"
+          }
+        },
+        {
+          "name": "Login cajero (guarda tokenCajero)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('200 OK', () => pm.response.to.have.status(200));",
+                  "pm.collectionVariables.set('tokenCajero', pm.response.json().access);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"username\": \"cajero\",\n  \"password\": \"Cajero2026*\"\n}"
+            },
+            "url": "{{base}}/auth/login/"
+          }
+        },
+        {
+          "name": "Login con clave incorrecta (401)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('401', () => pm.response.to.have.status(401));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"username\": \"admin\",\n  \"password\": \"mala\"\n}"
+            },
+            "url": "{{base}}/auth/login/"
+          }
+        },
+        {
+          "name": "¿Quién soy?",
+          "request": {
+            "method": "GET",
+            "url": "{{base}}/auth/yo/"
+          }
+        },
+        {
+          "name": "Cajero NO puede ver reportes (403)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('403', () => pm.response.to.have.status(403));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{tokenCajero}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "url": "{{base}}/reportes/ventas/"
+          }
+        }
+      ]
+    },
+    {
+      "name": "2. Catálogo y entidades",
+      "item": [
+        {
+          "name": "Listar productos",
+          "request": {
+            "method": "GET",
+            "url": "{{base}}/productos/"
+          }
+        },
+        {
+          "name": "Crear producto (admin)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nombre\": \"Borrador de nata\",\n  \"codigo\": \"BOR-001\",\n  \"categoriaId\": 1,\n  \"precio\": 800,\n  \"costo\": 350,\n  \"seguimientoInventario\": true,\n  \"stock\": 60\n}"
+            },
+            "url": "{{base}}/productos/"
+          }
+        },
+        {
+          "name": "Edición en caliente (PATCH, cajero o admin)",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"precio\": 1300\n}"
+            },
+            "url": "{{base}}/productos/1/"
+          }
+        },
+        {
+          "name": "Listar categorías",
+          "request": {
+            "method": "GET",
+            "url": "{{base}}/categorias/"
+          }
+        },
+        {
+          "name": "Eliminar categoría con productos (409)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('409', () => pm.response.to.have.status(409));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "DELETE",
+            "url": "{{base}}/categorias/1/"
+          }
+        },
+        {
+          "name": "Listar clientes",
+          "request": {
+            "method": "GET",
+            "url": "{{base}}/clientes/"
+          }
+        },
+        {
+          "name": "Crear cliente",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nombre\": \"Laura Pérez\",\n  \"telefono\": \"3005556677\",\n  \"correo\": \"\"\n}"
+            },
+            "url": "{{base}}/clientes/"
+          }
+        },
+        {
+          "name": "Listar proveedores",
+          "request": {
+            "method": "GET",
+            "url": "{{base}}/proveedores/"
+          }
+        },
+        {
+          "name": "Listar descuentos",
+          "request": {
+            "method": "GET",
+            "url": "{{base}}/descuentos/"
+          }
+        },
+        {
+          "name": "Crear descuento (admin)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nombre\": \"Día del estudiante\",\n  \"tipo\": \"porcentaje\",\n  \"valor\": 15\n}"
+            },
+            "url": "{{base}}/descuentos/"
+          }
+        }
+      ]
+    },
+    {
+      "name": "3. Ventas",
+      "item": [
+        {
+          "name": "Guardar venta abierta",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"estado\": \"abierta\",\n  \"items\": [{ \"productoId\": 1, \"cantidad\": 2 }],\n  \"metodoPago\": \"Efectivo\"\n}"
+            },
+            "url": "{{base}}/ventas/"
+          }
+        },
+        {
+          "name": "Listar ventas abiertas",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{base}}/ventas/?estado=abierta",
+              "host": [
+                "{{base}}"
+              ],
+              "path": [
+                "ventas",
+                ""
+              ],
+              "query": [
+                {
+                  "key": "estado",
+                  "value": "abierta"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Cerrar venta (efectivo + descuento)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('201', () => pm.response.to.have.status(201));",
+                  "const v = pm.response.json();",
+                  "pm.collectionVariables.set('ventaId', v.id);",
+                  "pm.collectionVariables.set('itemId', v.items[0].id);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"estado\": \"cerrada\",\n  \"items\": [\n    { \"productoId\": 1, \"cantidad\": 3 },\n    { \"productoId\": 5, \"cantidad\": 1 }\n  ],\n  \"metodoPago\": \"Efectivo\",\n  \"valorRecibido\": 20000,\n  \"descuentoId\": 1\n}"
+            },
+            "url": "{{base}}/ventas/"
+          }
+        },
+        {
+          "name": "Venta sin stock suficiente (400)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('400', () => pm.response.to.have.status(400));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"estado\": \"cerrada\",\n  \"items\": [{ \"productoId\": 10, \"cantidad\": 9999 }],\n  \"metodoPago\": \"Nequi\"\n}"
+            },
+            "url": "{{base}}/ventas/"
+          }
+        },
+        {
+          "name": "Historial (cerradas)",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{base}}/ventas/?estado=cerrada",
+              "host": [
+                "{{base}}"
+              ],
+              "path": [
+                "ventas",
+                ""
+              ],
+              "query": [
+                {
+                  "key": "estado",
+                  "value": "cerrada"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Detalle de venta",
+          "request": {
+            "method": "GET",
+            "url": "{{base}}/ventas/{{ventaId}}/"
+          }
+        },
+        {
+          "name": "Corregir venta cerrada (admin)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"items\": [\n    { \"productoId\": 1, \"cantidad\": 1 },\n    { \"productoId\": 2, \"cantidad\": 2 }\n  ],\n  \"clienteId\": 1,\n  \"metodoPago\": \"Debe\"\n}"
+            },
+            "url": "{{base}}/ventas/{{ventaId}}/corregir/"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('200', () => pm.response.to.have.status(200));",
+                  "const v = pm.response.json();",
+                  "pm.test('marcada como corregida', () => pm.expect(v.corregida).to.be.true);",
+                  "// La corrección reemplaza las líneas: se toma el id de la nueva línea para el reembolso",
+                  "pm.collectionVariables.set('itemId', v.items[0].id);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Reembolso parcial (admin)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"motivo\": \"Producto defectuoso\",\n  \"items\": [{ \"itemId\": {{itemId}}, \"cantidad\": 1, \"retornaInventario\": true }]\n}"
+            },
+            "url": "{{base}}/ventas/{{ventaId}}/reembolsos/"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('201', () => pm.response.to.have.status(201));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Reembolsos de una venta",
+          "request": {
+            "method": "GET",
+            "url": "{{base}}/ventas/{{ventaId}}/reembolsos/"
+          }
+        }
+      ]
+    },
+    {
+      "name": "4. Compras (admin)",
+      "item": [
+        {
+          "name": "Registrar compra",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"proveedorId\": 1,\n  \"items\": [{ \"productoId\": 10, \"cantidad\": 12, \"costo\": 1500 }]\n}"
+            },
+            "url": "{{base}}/compras/"
+          }
+        },
+        {
+          "name": "Listar compras",
+          "request": {
+            "method": "GET",
+            "url": "{{base}}/compras/"
+          }
+        }
+      ]
+    },
+    {
+      "name": "5. Faltantes",
+      "item": [
+        {
+          "name": "Registrar faltante (inexistente)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"descripcion\": \"Cofias\",\n  \"cantidad\": 2,\n  \"tipo\": \"inexistente\",\n  \"proveedorId\": null\n}"
+            },
+            "url": "{{base}}/faltantes/"
+          }
+        },
+        {
+          "name": "Registrar faltante (agotado)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"productoId\": 10,\n  \"cantidad\": 1,\n  \"tipo\": \"agotado\",\n  \"proveedorId\": 1\n}"
+            },
+            "url": "{{base}}/faltantes/"
+          }
+        },
+        {
+          "name": "Listar pendientes",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{base}}/faltantes/?estado=pendiente",
+              "host": [
+                "{{base}}"
+              ],
+              "path": [
+                "faltantes",
+                ""
+              ],
+              "query": [
+                {
+                  "key": "estado",
+                  "value": "pendiente"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Para próximas compras",
+          "request": {
+            "method": "GET",
+            "url": "{{base}}/faltantes/para-compras/"
+          }
+        },
+        {
+          "name": "Marcar resuelto",
+          "request": {
+            "method": "POST",
+            "url": "{{base}}/faltantes/1/resolver/"
+          }
+        }
+      ]
+    },
+    {
+      "name": "6. Reportes (admin)",
+      "item": [
+        {
+          "name": "Ventas por rango",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{base}}/reportes/ventas/?desde=2026-11-01&hasta=2026-11-30",
+              "host": [
+                "{{base}}"
+              ],
+              "path": [
+                "reportes",
+                "ventas",
+                ""
+              ],
+              "query": [
+                {
+                  "key": "desde",
+                  "value": "2026-11-01"
+                },
+                {
+                  "key": "hasta",
+                  "value": "2026-11-30"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Productos más vendidos",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{base}}/reportes/productos-mas-vendidos/?desde=2026-11-01&hasta=2026-11-30",
+              "host": [
+                "{{base}}"
+              ],
+              "path": [
+                "reportes",
+                "productos-mas-vendidos",
+                ""
+              ],
+              "query": [
+                {
+                  "key": "desde",
+                  "value": "2026-11-01"
+                },
+                {
+                  "key": "hasta",
+                  "value": "2026-11-30"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Compras por rango",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{base}}/reportes/compras/?desde=2026-11-01&hasta=2026-11-30",
+              "host": [
+                "{{base}}"
+              ],
+              "path": [
+                "reportes",
+                "compras",
+                ""
+              ],
+              "query": [
+                {
+                  "key": "desde",
+                  "value": "2026-11-01"
+                },
+                {
+                  "key": "hasta",
+                  "value": "2026-11-30"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Faltantes frecuentes",
+          "request": {
+            "method": "GET",
+            "url": "{{base}}/reportes/faltantes/"
+          }
+        }
+      ]
+    }
+  ]
+}
